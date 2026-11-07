@@ -46,7 +46,9 @@ async function parties(t) {
   const dirs = {};
   for (const name of ["a", "b", "c"]) {
     dirs[name] = path.join(root, name);
-    await mkdir(path.join(dirs[name], "context-audits"), { recursive: true });
+    // mkdtemp is private. A nested party directory must be too, or Linux rejects the intake store.
+    await mkdir(dirs[name], { mode: 0o700 });
+    await mkdir(path.join(dirs[name], "context-audits"), { mode: 0o700 });
   }
   const relay = await relayApi.startLocalRelay();
   const keys = { a: sdk.generateKeyPair(), b: sdk.generateKeyPair(), c: sdk.generateKeyPair() };
