@@ -62,7 +62,9 @@ export function createContextSender({ service, runtimeDir, dataDir, launch = lau
             if (session.state === "cancelled") return;
             if (event.type === "approval") { session.state = "approval"; session.approval = { id: event.id, ...event.card }; }
             if (event.type === "progress") { session.state = event.state; session.approval = undefined; }
-            if (event.type === "result") { session.state = event.state; session.deliverable = publicString(event.deliverable, 65536); session.peerRejected = event.peerRejected === true; session.approval = undefined; }
+            if (event.type === "result") { session.state = event.state; session.deliverable = publicString(event.deliverable, 65536); session.peerRejected = event.peerRejected === true;
+              session.delegateeOwnerDids = Array.isArray(event.delegateeOwnerDids) ? event.delegateeOwnerDids.filter(did => typeof did === "string").map(shortDid) : undefined;
+              session.approval = undefined; }
           } catch { child.kill(); }
         });
         const timer = setTimeout(() => { session.state = "failed"; child.kill(); }, 660000);
@@ -78,7 +80,7 @@ export function createContextSender({ service, runtimeDir, dataDir, launch = lau
       } catch { if (home) await rm(home, { recursive: true, force: true }); return { ok: false }; }
       finally { starting = false; }
     },
-    status() { return active ? { state: active.state, approval: active.approval, deliverable: active.deliverable, peerRejected: active.peerRejected } : { state: "idle" }; },
+    status() { return active ? { state: active.state, approval: active.approval, deliverable: active.deliverable, peerRejected: active.peerRejected, delegateeOwnerDids: active.delegateeOwnerDids } : { state: "idle" }; },
     answer(id, accept) {
       if (!active?.approval || active.approval.id !== id || typeof accept !== "boolean") return { ok: false };
       active.child.stdin.write(JSON.stringify({ type: "answer", id, accept }) + "\n");

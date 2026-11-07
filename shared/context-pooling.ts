@@ -7,7 +7,7 @@ export interface ContextSelectionDraft {
   fieldsDenied: string[];
   angle: string;
   body: string;
-  deliveryMode: "view_only" | "hand_over";
+  deliveryMode: "view_only" | "approval_redelegation" | "hand_over";
   lifetimeHours: number;
 }
 
@@ -42,6 +42,6 @@ export function selectionError(draft: ContextSelectionDraft): string | null {
   if (!draft.body.trim() || !draft.angle.trim() || !draft.selectors.length || draft.selectors.some(value => !value.trim()))
     return "切り出し本文・観点・範囲を入力してください。";
   if (draft.fieldsAllowed.some(value => draft.fieldsDenied.includes(value))) return "許可する列と拒否する列が重なっています。";
-  if (!["view_only", "hand_over"].includes(draft.deliveryMode)) return copy.preparing;
+  if (!["view_only", "approval_redelegation", "hand_over"].includes(draft.deliveryMode)) return copy.preparing;
   return null;
 }

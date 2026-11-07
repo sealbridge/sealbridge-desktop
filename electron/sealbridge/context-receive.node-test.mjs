@@ -56,7 +56,8 @@ async function fixture(t, options = {}) {
   const controller = new AbortController();
   const receiver = createContextReceiver({ sdk, owner, signApproval: core.signApproval, identityOptions, dataDir: dir,
     auditPath: path.join(dir, "context-audits", "receive.jsonl"), relay: relay.url, send: event => events.push(event),
-    workerOptions: { allowPrivateRelay: true, ...options.workerOptions }, reviewOptions: options.reviewOptions });
+    workerOptions: { allowPrivateRelay: true, ...options.workerOptions }, reviewOptions: options.reviewOptions,
+    enableRedelegation: options.enableRedelegation !== false });
   t.after(async () => { controller.abort(); receiver.stop(); await Promise.allSettled([...sending, running]); await relay.close(); await rm(dir, { recursive: true, force: true }); });
   const running = receiver.worker.start();
   running.catch(() => {});
@@ -159,7 +160,7 @@ test("discard rejects live contract without running the manual adapter", { timeo
 });
 
 test("approval redelegation is rejected by the bundled worker without a delegation facility", { timeout: 15000 }, async t => {
-  const { receiver, owner, sender, relay, events } = await fixture(t);
+  const { receiver, owner, sender, relay, events } = await fixture(t, { enableRedelegation: false });
   const manifest = sdk.buildTaskManifest({ ownerDid: sender.did, workerDid: owner.did, protocolVersion: "0.2.0",
     title: "fixture", description: "fixture", contextGrant: { selectors: ["$"], angle: "可否", deliveryMode: "approval_redelegation" } });
   const envelope = core.signEnvelope({ taskId: manifest.taskId, recipientDid: owner.did, seq: 0, eventType: "PROPOSE",
@@ -228,7 +229,7 @@ test("main retains projections and correlates live decisions through local-only 
   const handlers = new Map(), guarded = [];
   registerContextReceiveIpc({ receiver, ipcMain: { handle: (channel, handler) => handlers.set(channel, handler) },
     localOnly: (channel, action) => { guarded.push(channel); return action; } });
-  assert.equal(guarded.length, 3);
+  assert.equal(guarded.length, 5);
   assert.deepEqual(handlers.get("sealbridge:receive-action")(null, "held", "open"), { ok: true });
   assert.deepEqual(receiver.action("held", "open"), { ok: false });
   emit({ type: "compose", id: 3, taskId: "task", input });

@@ -56,12 +56,12 @@ export function ContextPoolingView() {
       <fieldset className="space-y-3"><legend>送り方</legend><p>{copy.lead}</p>
         {(Object.keys(modes) as (keyof typeof modes)[]).map(mode => <label key={mode} className="block">
           <input type="radio" name="context-delivery" value={mode} checked={draft.deliveryMode === mode}
-            disabled={mode === "approval_redelegation"} onChange={() => update({ deliveryMode: mode === "hand_over" ? mode : "view_only" })} /> {modes[mode].label}
-          {mode === "approval_redelegation" && "（準備中）"}<span className="block">{modes[mode].description}</span>
+            onChange={() => update({ deliveryMode: mode })} /> {modes[mode].label}
+          <span className="block">{modes[mode].description}</span>
         </label>)}
-        <p>{copy.preparing}</p>
       </fieldset>
       {draft.deliveryMode === "view_only" && <p>閲覧のみでも、受け手の監査ファイルには答えの中身が残ります。</p>}
+      {draft.deliveryMode === "approval_redelegation" && <p>{copy.approvalExtra}</p>}
       {draft.deliveryMode === "hand_over" && <p>{copy.handOverExtra}</p>}
       <p>{modes[draft.deliveryMode].retention}</p>
       <label className="block">有効期限（時間）<input className="ui-input" type="number" min={1} max={168} value={draft.lifetimeHours}

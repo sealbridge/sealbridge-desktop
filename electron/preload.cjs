@@ -131,6 +131,9 @@ const bridge = {
     receiveStatus: () => ipcRenderer.invoke("sealbridge:receive-status"),
     receiveAction: (id, action) => ipcRenderer.invoke("sealbridge:receive-action", id, action),
     receiveReply: (id, body) => ipcRenderer.invoke("sealbridge:receive-reply", id, body),
+    receiveNarrow: request => ipcRenderer.invoke("sealbridge:receive-narrow", request),
+    receiveDecide: (id, accept) => typeof id === "number" && typeof accept === "boolean"
+      ? ipcRenderer.invoke("sealbridge:receive-decide", id, accept) : Promise.resolve({ ok: false }),
     contextRecipients: () => ipcRenderer.invoke("sealbridge:context-recipients"),
     startContext: (id, draft) => ipcRenderer.invoke("sealbridge:context-start", id, draft),
     contextStatus: () => ipcRenderer.invoke("sealbridge:context-status"),

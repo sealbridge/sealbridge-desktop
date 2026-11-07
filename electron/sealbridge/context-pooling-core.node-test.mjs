@@ -23,8 +23,11 @@ test("bundled SDK defaults and active restrictions", async () => {
   }
   const approvalGrant = sdk.buildContextGrant({ ...options, deliveryMode: "approval_redelegation" }, createdAt);
   assert.equal(approvalGrant.deliveryMode, "approval_redelegation");
-  const refused = await createContextPreparation({ now: () => now })({ ...options, body: "input", deliveryMode: "approval_redelegation", lifetimeHours: 24 });
-  assert.equal(refused.ok, false);
+  const approval = await createContextPreparation({ now: () => now })({ ...options, body: "input", deliveryMode: "approval_redelegation", lifetimeHours: 24 });
+  assert.equal(approval.ok, true);
+  assert.equal(approval.summary.mode, "approval_redelegation");
+  assert.throws(() => sdk.validateContextGrantUse({ contextGrant: approvalGrant, createdAt, protocolVersion: "0.2.0",
+    permissions: { maxDelegationDepth: 0 }, sandboxPolicy: { filesystemScope: "ephemeral_workspace_only" } }, "input", now), /CONTEXT_GRANT_DEPTH_CONFLICT/);
   assert.throws(() => sdk.buildContextGrant({ ...options, deliveryMode: "hand_over", inputRetentionAllowed: true }, createdAt), /SCHEMA_VIOLATION|CONTEXT_GRANT_INPUT_RETENTION_UNAVAILABLE/);
   assert.throws(() => sdk.buildContextGrant({ ...options, expiresAt: "2026-11-08T00:00:01Z" }, createdAt), /CONTEXT_GRANT_EXPIRY_INVALID/);
   const manifest = { contextGrant: grant, createdAt, protocolVersion: "0.2.0", permissions: { maxDelegationDepth: 0 }, sandboxPolicy: { filesystemScope: "ephemeral_workspace_only" } };

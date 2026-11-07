@@ -12,6 +12,8 @@ export interface SealbridgeBridge {
   receiveStatus(): Promise<ContextReceiveStatus>;
   receiveAction(id: string, action: "open" | "discard"): Promise<{ ok: boolean }>;
   receiveReply(id: number, body: string): Promise<{ ok: boolean }>;
+  receiveNarrow(request: ContextNarrowRequest): Promise<{ ok: boolean }>;
+  receiveDecide(id: number, accept: boolean): Promise<{ ok: boolean }>;
   contextRecipients(): Promise<ContextRecipient[]>;
   startContext(id: string, draft: ContextSelectionDraft): Promise<{ ok: boolean }>;
   contextStatus(): Promise<ContextSendStatus>;
@@ -47,7 +49,9 @@ export interface ContextSendStatus {
   peerRejected?: boolean;
   deliverable?: string;
   approval?: { id: number; gate: string; recipient: string; mode: string; angle: string;
-    allowedCount: number; deniedCount: number; bytes: number; expiresAt: string; digest: string; deliverable?: string; deliverableDigest?: string };
+    allowedCount: number; deniedCount: number; bytes: number; expiresAt: string; digest: string; deliverable?: string; deliverableDigest?: string;
+    delegateeOwnerDids?: string[] };
+  delegateeOwnerDids?: string[];
 }
 
 /** Verified audit projection. The selection body is never included. */
@@ -67,4 +71,22 @@ export interface ContextReceiveStatus {
     inspection?: { verdict: string; findings: { ruleId: string; severity: string; noteCode: string }[] } }[];
   compose: { id: number; taskId: string; summary?: ContextGrantSummary }[];
   rejected: { taskId: string; code: string }[];
+  redelegation?: { id: number; taskId: string; summary?: ContextGrantSummary;
+    parent: { angle: string; selectors: string[]; fieldsAllowed: string[]; fieldsDenied: string[]; body?: string };
+    recipients: { id: string; name: string; did: string }[] };
+  approvals?: { id: number; gate: string; recipient?: string; angle?: string; droppedSelectors?: string[]; droppedFields?: string[];
+    droppedLines?: string[]; depthRemaining?: number; discloseRoot?: boolean; bytes?: number; expiresAt?: string; digest?: string;
+    deliverable?: string; deliverableDigest?: string; delegateeOwnerDids?: string[] }[];
+}
+
+/** Owner-composed child request. Routing stays in the receive process. */
+export interface ContextNarrowRequest {
+  id: number;
+  recipientId: string;
+  selectors: string[];
+  fieldsAllowed: string[];
+  fieldsDenied: string[];
+  angle: string;
+  body: string;
+  discloseRoot: boolean;
 }

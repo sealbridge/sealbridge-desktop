@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";
 import { createInterface } from "node:readline";
 import { sanitizedEnvironment } from "./mcp-host.mjs";
-import { requireReceiveAudit } from "./context-receive-core.mjs";
+import { requireReceiveAudit, validNarrowRequest } from "./context-receive-core.mjs";
 
 export function launchContextReceive({ runtimeDir, dataDir, auditPath, home, spawnChild = spawn }) {
   requireReceiveAudit(dataDir, auditPath);
@@ -16,7 +16,7 @@ export function launchContextReceive({ runtimeDir, dataDir, auditPath, home, spa
 }
 
 export function createDesktopReceiver({ runtimeDir, dataDir, launch = launchContextReceive }) {
-  let child, starting, stopped = false, state = "idle", rows = [], compose = [], rejected = [];
+  let child, starting, stopped = false, state = "idle", rows = [], compose = [], rejected = [], redelegation, approvals = [];
   const write = value => child?.stdin.write(JSON.stringify(value) + "\n");
   return {
     start() {
@@ -45,10 +45,15 @@ export function createDesktopReceiver({ runtimeDir, dataDir, launch = launchCont
               if (event.type === "compose") compose.push({ id: event.id, taskId: event.taskId, summary: event.summary });
               if (event.type === "compose-ended") compose = compose.filter(item => item.id !== event.id);
               if (event.type === "rejected") rejected = [...rejected.slice(-99), { taskId: event.taskId, code: event.code }];
+              if (event.type === "redelegation") redelegation = { id: event.id, taskId: event.taskId, summary: event.summary,
+                parent: event.parent, recipients: Array.isArray(event.recipients) ? event.recipients : [] };
+              if (event.type === "redelegation-ended" && redelegation?.id === event.id) redelegation = undefined;
+              if (event.type === "approval" && event.card) approvals = [...approvals.filter(item => item.id !== event.id), { id: event.id, ...event.card }];
+              if (event.type === "approval-ended") approvals = approvals.filter(item => item.id !== event.id);
             } catch { active.kill(); state = "failed"; }
           });
           child.once("close", () => {
-            if (child === active) { child = undefined; state = state === "stopped" ? state : "failed"; rows = []; compose = []; }
+            if (child === active) { child = undefined; state = state === "stopped" ? state : "failed"; rows = []; compose = []; redelegation = undefined; approvals = []; }
             void rm(home, { recursive: true, force: true });
           });
           write({ type: "start", auditPath });
@@ -56,7 +61,7 @@ export function createDesktopReceiver({ runtimeDir, dataDir, launch = launchCont
       })().finally(() => { starting = undefined; });
       return starting;
     },
-    status: () => ({ state, rows, compose, rejected }),
+    status: () => ({ state, rows, compose, rejected, redelegation, approvals }),
     action(id, action) {
       if (!["open", "discard"].includes(action) || typeof id !== "string") return { ok: false };
       const row = rows.find(item => item.id === id);
@@ -70,13 +75,29 @@ export function createDesktopReceiver({ runtimeDir, dataDir, launch = launchCont
       write({ type: "reply", id, body }); compose = compose.filter(item => item.id !== id);
       return { ok: true };
     },
-    stop() { stopped = true; state = "stopped"; child?.kill(); rows = []; compose = []; rejected = []; },
+    narrow(request) {
+      if (!validNarrowRequest(request) || redelegation?.id !== request.id ||
+          !redelegation.recipients.some(item => item.id === request.recipientId)) return { ok: false };
+      write({ type: "narrow", id: request.id, recipientId: request.recipientId, selectors: request.selectors,
+        fieldsAllowed: request.fieldsAllowed, fieldsDenied: request.fieldsDenied, angle: request.angle, body: request.body,
+        discloseRoot: request.discloseRoot === true });
+      redelegation = undefined;
+      return { ok: true };
+    },
+    decide(id, accept) {
+      if (!approvals.some(item => item.id === id) || typeof accept !== "boolean") return { ok: false };
+      write({ type: "decide", id, accept });
+      approvals = approvals.filter(item => item.id !== id);
+      return { ok: true };
+    },
+    stop() { stopped = true; state = "stopped"; child?.kill(); rows = []; compose = []; rejected = []; redelegation = undefined; approvals = []; },
   };
 }
 
 export function registerContextReceiveIpc({ ipcMain, localOnly, receiver }) {
   for (const [name, action] of Object.entries({ status: () => receiver.status(),
-    action: (_event, id, action) => receiver.action(id, action), reply: (_event, id, body) => receiver.reply(id, body) })) {
+    action: (_event, id, action) => receiver.action(id, action), reply: (_event, id, body) => receiver.reply(id, body),
+    narrow: (_event, request) => receiver.narrow(request), decide: (_event, id, accept) => receiver.decide(id, accept) })) {
     const channel = `sealbridge:receive-${name}`;
     ipcMain.handle(channel, localOnly(channel, action));
   }

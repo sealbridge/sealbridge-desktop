@@ -16,7 +16,7 @@ export function validContextDraft(value) {
       value[key].every(item => typeof item === "string" && item.trim() && item.length <= 1024)) &&
     typeof value.angle === "string" && value.angle.trim() && value.angle.length <= 2048 &&
     typeof value.body === "string" && value.body.trim() && value.body.length <= 65536 &&
-    ["view_only", "hand_over"].includes(value.deliveryMode) && typeof value.lifetimeHours === "number";
+    ["view_only", "hand_over", "approval_redelegation"].includes(value.deliveryMode) && typeof value.lifetimeHours === "number";
 }
 
 export async function loadContextSdk(runtimeDir = developmentRuntimeDir) {
@@ -40,7 +40,8 @@ export function createContextPreparation({ loadSdk = loadContextSdk, now = Date.
         expiresAt: new Date(timestamp + draft.lifetimeHours * 3600000).toISOString() }, createdAt);
       sdk.validateContextGrant(grant, createdAt);
       sdk.validateContextGrantUse({ contextGrant: grant, createdAt, protocolVersion: "0.2.0",
-        permissions: { maxDelegationDepth: 0 }, sandboxPolicy: { filesystemScope: "ephemeral_workspace_only" } }, draft.body, timestamp);
+        permissions: { maxDelegationDepth: grant.deliveryMode === "approval_redelegation" ? 1 : 0 },
+        sandboxPolicy: { filesystemScope: "ephemeral_workspace_only" } }, draft.body, timestamp);
       return { ok: true, summary: contextGrantSummary(sdk, grant, bytes) };
     } catch { return invalid(); }
   };

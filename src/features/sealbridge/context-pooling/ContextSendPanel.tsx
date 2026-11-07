@@ -36,6 +36,7 @@ export function ContextSendPanel({ draft, ready }: { draft: ContextSelectionDraf
     <button type="button" className="ui-button" disabled={!ready || !target || (!terminal && status.state !== "idle")} onClick={() => { void start(); }}>送る</button>
     <p role="status">{({ idle: "下書きの確認は承認ではありません。", starting: "送信を準備しています", approval: "所有者の確認を待っています", sending: "送信中", working: "相手が作業中", waiting: "確認中", completed: "納品の最終確認が完了しました", failed: "送信を完了できませんでした。送り直す場合は下書きから作り直します。", cancelled: "中止しました", pending: "相手の側で保留になりました。送り直す場合は下書きから作り直してください。", "timed-out": "待ち時間が過ぎました。相手の保留を開くには送り直しが必要です。" } as Record<string, string>)[status.state]}</p>
     {status.deliverable && <pre className="whitespace-pre-wrap">{status.deliverable}</pre>}
+    {!!status.delegateeOwnerDids?.length && <p>2段目の相手 {status.delegateeOwnerDids.join("、")}</p>}
     {status.peerRejected && <p role="alert">相手の版が持ち寄りに対応していない可能性があります</p>}
     {card && <div role="dialog" aria-label="持ち寄りの承認" onKeyDown={event => { if (event.key === "Enter") event.preventDefault(); }}>
       <p>{card.gate === "final_verification" ? "納品の最終確認" : "この内容で送りますか"}</p>
@@ -44,6 +45,7 @@ export function ContextSendPanel({ draft, ready }: { draft: ContextSelectionDraf
       <p>grant ダイジェスト <code>{card.digest}</code></p>
       {card.deliverable && <pre className="whitespace-pre-wrap">{card.deliverable}</pre>}
       {card.deliverableDigest && <p>納品物ダイジェスト <code>{card.deliverableDigest}</code></p>}
+      {!!card.delegateeOwnerDids?.length && <p>2段目の相手 {card.delegateeOwnerDids.join("、")}</p>}
       <button type="button" className="ui-button" onClick={() => { void bridge?.answerContext(card.id, false); }}>拒否する</button>
       <button type="button" className="ui-button" onClick={() => { void bridge?.answerContext(card.id, true); }}>{card.gate === "final_verification" ? "最終確認を承認する" : "この内容で送る"}</button>
     </div>}

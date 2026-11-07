@@ -21,8 +21,12 @@ export async function executeContextSend({ sdk, owner, signApproval, ask, draft,
         if (receipt.payload.decision !== "APPROVED") throw new Error("OWNER_DENIED");
         send({ type: "progress", state: "sending" });
       }, onProgress: () => send({ type: "progress", state: "working" }) });
+    const children = result.bundle?.entries?.find(entry => entry?.body?.eventType === "DELIVER")?.body?.payload?.delegation?.children;
+    const delegateeOwnerDids = Array.isArray(children)
+      ? children.map(child => child?.link?.payload?.delegateeOwnerDid).filter(did => typeof did === "string") : undefined;
     send({ type: "result", state: result.state === "SETTLED" ? "completed" : "cancelled",
-      deliverable: result.state === "SETTLED" ? publicString(JSON.stringify(result.deliverable), 65536) : undefined });
+      deliverable: result.state === "SETTLED" ? publicString(JSON.stringify(result.deliverable), 65536) : undefined,
+      ...(delegateeOwnerDids?.length ? { delegateeOwnerDids } : {}) });
     return result;
   } finally { client.stopDelivery(); }
 }

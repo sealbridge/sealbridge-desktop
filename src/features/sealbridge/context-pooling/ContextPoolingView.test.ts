@@ -19,7 +19,8 @@ it("counts the exact JSON input bytes and refuses more than 64 KiB or 7 days", (
   expect(selectionError({ ...draft, lifetimeHours: 168 })).toBeNull();
   expect(selectionError({ ...draft, lifetimeHours: 169 })).toBe(copy.expiryError);
   expect(selectionError({ ...draft, lifetimeHours: 0 })).toBe(copy.expiredSend);
-  expect(selectionError({ ...draft, deliveryMode: "approval_redelegation" as "view_only" })).toBe(copy.preparing);
+  expect(selectionError({ ...draft, deliveryMode: "approval_redelegation" })).toBeNull();
+  expect(selectionError({ ...draft, deliveryMode: "other" as "view_only" })).toBe(copy.preparing);
 });
 
 it("keeps CP0 copy verbatim", () => {
@@ -31,21 +32,25 @@ it("keeps CP0 copy verbatim", () => {
   expect(modes.hand_over.badge).toBe("引き渡し（納品は保持可）");
 });
 
-it("defaults to view only, disables approval, checks with SDK bridge and never sends", async () => {
+it("defaults to view only, offers approval redelegation, checks with SDK bridge and never sends", async () => {
   const previous = window.ogb, prepareContext = vi.fn();
   Object.assign(window, { ogb: { sealbridge: { prepareContext } } });
   const host = document.createElement("div"), root = createRoot(host);
   try {
     flushSync(() => root.render(createElement(ContextPoolingView)));
     expect(host.textContent).toContain(copy.limit);
-    expect(host.textContent).toContain(copy.preparing);
+    expect(host.textContent).not.toContain("準備中");
+    expect(host.textContent).not.toContain(copy.preparing);
     expect(host.querySelector<HTMLInputElement>('[value="view_only"]')!.checked).toBe(true);
+    expect(host.textContent).toContain("閲覧のみでも、受け手の監査ファイルには答えの中身が残ります。");
     const approval = host.querySelector<HTMLInputElement>('[value="approval_redelegation"]')!;
-    expect(approval.disabled).toBe(true); flushSync(() => approval.click());
+    expect(approval.disabled).toBe(false); flushSync(() => approval.click());
+    expect(host.querySelector<HTMLInputElement>('[value="approval_redelegation"]')!.checked).toBe(true);
+    expect(host.textContent).toContain(copy.approvalExtra);
+    expect(host.textContent).not.toContain("閲覧のみでも、受け手の監査ファイルには答えの中身が残ります。");
     expect(prepareContext).not.toHaveBeenCalled();
     for (const mode of Object.values(modes)) expect(host.textContent).toContain(mode.description);
     expect(Array.from(host.querySelectorAll("button")).find(b => b.textContent === "送る")!.disabled).toBe(true);
-    expect(host.textContent).toContain("閲覧のみでも、受け手の監査ファイルには答えの中身が残ります。");
     flushSync(() => host.querySelector<HTMLInputElement>('[value="hand_over"]')!.click());
     expect(host.querySelector('[type="checkbox"]')).toBeNull();
     expect(host.textContent).not.toContain(copy.inputLabel);

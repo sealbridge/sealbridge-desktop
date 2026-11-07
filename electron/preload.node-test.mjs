@@ -169,7 +169,7 @@ test("a Cloud link arriving before React subscriptions is delivered exactly once
 
 test("Sealbridge bridge forwards only fixed status and retry operations", async () => {
   const before = invocations.length;
-  assert.deepEqual(Object.keys(exposed.api.sealbridge).sort(), ["answerContext", "cancelContext", "contextRecipients", "contextStatus", "deleteReceivedAudit", "inviteDecision", "invites", "pasteInvite", "prepareContext", "receiveAction", "receiveReply", "receiveStatus", "receivedAudits", "resetContext", "retry", "startContext", "status"]);
+  assert.deepEqual(Object.keys(exposed.api.sealbridge).sort(), ["answerContext", "cancelContext", "contextRecipients", "contextStatus", "deleteReceivedAudit", "inviteDecision", "invites", "pasteInvite", "prepareContext", "receiveAction", "receiveDecide", "receiveNarrow", "receiveReply", "receiveStatus", "receivedAudits", "resetContext", "retry", "startContext", "status"]);
   await exposed.api.sealbridge.status({ privateKey: "fixture-only" });
   await exposed.api.sealbridge.retry("arbitrary-tool");
   assert.deepEqual(invocations.slice(before), [["sealbridge:status"], ["sealbridge:retry"]]);

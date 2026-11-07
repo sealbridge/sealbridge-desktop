@@ -10,7 +10,7 @@ test("IPC returns only public summary; failures never echo body, schema or SDK e
   const captured = [];
   const sdk = {
     buildContextGrant(options, createdAt) { captured.push(options); return { ...options, createdAt, retention: "ephemeral_view" }; },
-    validateContextGrant() {}, validateContextGrantUse(_manifest, body) { assert.equal(body, secret); },
+    validateContextGrant() {}, validateContextGrantUse(manifest, body) { assert.equal(body, secret); captured.push(manifest.permissions.maxDelegationDepth); },
     contextGrantAuditPayload() { return { grantDigest: "a".repeat(64) }; },
   };
   const handlers = new Map();
@@ -25,8 +25,14 @@ test("IPC returns only public summary; failures never echo body, schema or SDK e
   assert.equal(JSON.stringify(result).includes(secret), false);
   assert.equal(JSON.stringify(result).includes("selectors"), false);
   assert.equal(captured[0].deliveryMode, "view_only");
+  assert.equal(captured[1], 0);
+  const approval = await call({ ...draft(), deliveryMode: "approval_redelegation" });
+  assert.equal(approval.ok, true);
+  assert.equal(approval.summary.mode, "approval_redelegation");
+  assert.equal(captured.at(-1), 1);
+  assert.equal(JSON.stringify(approval).includes(secret), false);
   assert.throws(() => handlers.get("sealbridge:context-prepare")({ local: false }, draft()));
-  for (const value of [{ ...draft(), deliveryMode: "approval_redelegation" }, { ...draft(), inputRetentionAllowed: true }, null])
+  for (const value of [{ ...draft(), inputRetentionAllowed: true }, null])
     assert.equal((await call(value)).ok, false);
   const failing = createContextPreparation({ loadSdk: () => { throw new Error(secret); } });
   assert.equal(JSON.stringify(await failing(draft())).includes(secret), false);

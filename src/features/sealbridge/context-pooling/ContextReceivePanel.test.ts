@@ -63,6 +63,38 @@ it.each(["error", "unavailable", "pending"])("never offers opening for %s inspec
   } finally { flushSync(() => root.unmount()); Object.assign(window, { ogb: previous }); }
 });
 
+it("requires a narrower extract before asking the next owner", async () => {
+  const previous = window.ogb;
+  const receiveNarrow = vi.fn().mockResolvedValue({ ok: true });
+  const marker = "DW4_FORM_" + "TRANSIENT_MARKER";
+  const status: ContextReceiveStatus = { state: "ready", rows: [], compose: [], rejected: [], redelegation: {
+    id: 4, taskId: "parent", parent: { angle: "可否", selectors: ["one", "two"], fieldsAllowed: ["x", "y"], fieldsDenied: ["private"], body: marker },
+    recipients: [{ id: "peer-1", name: "相手", did: "did:key:child…00000000" }] } };
+  const store = vi.spyOn(Storage.prototype, "setItem");
+  Object.assign(window, { ogb: { sealbridge: { receiveStatus: vi.fn().mockResolvedValue(status), receiveNarrow } } });
+  const host = document.createElement("div"), root = createRoot(host);
+  const setValue = (element: HTMLTextAreaElement | HTMLSelectElement, value: string) => {
+    const prototype = element instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLTextAreaElement.prototype;
+    Object.getOwnPropertyDescriptor(prototype, "value")!.set!.call(element, value);
+    element.dispatchEvent(new Event(element instanceof HTMLSelectElement ? "change" : "input", { bubbles: true }));
+  };
+  try {
+    flushSync(() => root.render(createElement(ContextReceivePanel)));
+    await vi.waitFor(() => expect(host.textContent).toContain("ほかの相手へ、狭めて頼む"));
+    const submit = [...host.querySelectorAll("button")].find(item => item.textContent === "この範囲で頼む")!;
+    expect(submit.disabled).toBe(true);
+    for (const area of host.querySelectorAll("textarea")) expect(area.getAttribute("spellcheck")).toBe("false");
+    const [selectors, allowed] = [...host.querySelectorAll("textarea")] as HTMLTextAreaElement[];
+    flushSync(() => { setValue(selectors, "one"); setValue(allowed, "x"); setValue(host.querySelector("select")!, "peer-1"); });
+    expect(submit.disabled).toBe(false);
+    flushSync(() => submit.click());
+    expect(receiveNarrow).toHaveBeenCalledWith({ id: 4, recipientId: "peer-1", selectors: ["one"], fieldsAllowed: ["x"],
+      fieldsDenied: ["private"], angle: "可否", body: marker, discloseRoot: false });
+    expect(store).not.toHaveBeenCalled();
+    expect(JSON.stringify(store.mock.calls).includes(marker)).toBe(false);
+  } finally { flushSync(() => root.unmount()); Object.assign(window, { ogb: previous }); vi.restoreAllMocks(); }
+});
+
 it("receive implementation never interprets markup or persists input and answers", () => {
   for (const file of ["src/features/sealbridge/context-pooling/ContextReceivePanel.tsx", "electron/sealbridge/context-receive-core.mjs", "electron/sealbridge/context-receive.mjs", "electron/sealbridge/context-receive-child.mjs"]) {
     expect(readFileSync(file, "utf8")).not.toMatch(/dangerouslySetInnerHTML|localStorage|sessionStorage|indexedDB|console\./);

@@ -38,6 +38,29 @@ it("shows the actual approval projection, Enter cannot approve, explicit decisio
   } finally { flushSync(() => root.unmount()); Object.assign(window, { ogb: previous }); vi.useRealTimers(); }
 });
 
+it("shows the second hop and a peer rejection without sending again", async () => {
+  vi.useFakeTimers();
+  const previous = window.ogb;
+  const startContext = vi.fn();
+  const card = { id: 3, gate: "final_verification", recipient: "did:key:fixture…peer", mode: "approval_redelegation", angle: "可否",
+    allowedCount: 1, deniedCount: 1, bytes: 4, expiresAt: "2099-01-01", digest: "cd".repeat(32), delegateeOwnerDids: ["did:key:child…00000000"] };
+  const bridge = { contextRecipients: vi.fn().mockResolvedValue([]), contextStatus: vi.fn().mockResolvedValue({ state: "approval", approval: card }),
+    startContext, answerContext: vi.fn(), cancelContext: vi.fn(), resetContext: vi.fn() };
+  Object.assign(window, { ogb: { sealbridge: bridge } });
+  const host = document.createElement("div"), root = createRoot(host);
+  try {
+    flushSync(() => root.render(createElement(ContextSendPanel, { draft: { ...defaultContextDraft(), deliveryMode: "approval_redelegation" }, ready: true })));
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    expect(host.textContent).toContain("2段目の相手 did:key:child…00000000");
+    expect(host.textContent).toContain("納品の最終確認");
+    bridge.contextStatus.mockResolvedValue({ state: "failed", peerRejected: true, delegateeOwnerDids: card.delegateeOwnerDids });
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    expect(host.textContent).toContain("相手の版が持ち寄りに対応していない可能性があります");
+    expect(host.textContent).toContain("2段目の相手 did:key:child…00000000");
+    expect(startContext).not.toHaveBeenCalled();
+  } finally { flushSync(() => root.unmount()); Object.assign(window, { ogb: previous }); vi.useRealTimers(); }
+});
+
 it("draft body stays outside renderer storage and logging and its input disables spelling", async () => {
   const previous = window.ogb;
   const marker = "DW1_RENDERER_" + "TRANSIENT_MARKER";
