@@ -320,6 +320,10 @@ desktop routing, cancellation, and computer authority cleanup.
 
 ## Evidence
 
+The [Sealbridge Desktop home fixture](desktop-home.md) exercises the home and
+first-run renderer with synthetic public bridge state. Its documented local
+Electron startup failure means the full workflow is not yet proven there.
+
 The [persistence responsiveness benchmark](persistence-performance.md) measures
 synthetic message/log bursts and history scans, with isolated chat, visibility
 and packaged-worker checks. It is not a production capacity qualification.
