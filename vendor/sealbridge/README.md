@@ -1,8 +1,9 @@
 # Bundled core
 
 Upstream source: https://github.com/sealbridge/sealbridge, commit
-`83dc05658308a5b5c41e44f9df1f7bd48c2c768f` (upstream version `0.5.0`).
-The desktop installs this archived commit, including CP5a, C-W1 rule inspection and C-W2 held task content exports,
+`d2a28ff754f124df20cbf26bf26fa8e14cec4878` (upstream version `0.6.2`).
+The desktop installs this archived commit, including interrupted outbox recovery, default AuditInterruption sealing,
+AES-256-GCM documentation and C-W4 quarantine deadlines,
 never a registry package with the same version. When the parent is Electron, the rule inspector child receives the constant `ELECTRON_RUN_AS_NODE=1`.
 `setApplicationKeyStore` retries briefly while `.config.lock` is held and succeeds when the requested key store is already published.
 `provenance.json` records SHA-256 hashes; the preparation script verifies both

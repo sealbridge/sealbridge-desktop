@@ -17,7 +17,7 @@ async function fixture(t, options = {}) {
           running++;
           events.emit("started");
           settings.onIdentity(did);
-          return { initialize: { serverInfo: { version: "0.5.0", secret: "fixture-secret" } } };
+          return { initialize: { serverInfo: { version: "0.6.2", secret: "fixture-secret" } } };
         },
         async close() { if (!host.closed) { host.closed = true; running--; } },
         crash: () => settings.onExit(), unavailable: () => settings.onUnavailable(),
@@ -32,7 +32,7 @@ test("service exposes only public status and bounds crash recovery with backoff"
   const { service, hosts, events, running } = await fixture(t);
   t.after(() => service.close());
   await service.start();
-  assert.deepEqual(service.status(), { state: "ready", did, version: "0.5.0" });
+  assert.deepEqual(service.status(), { state: "ready", did, version: "0.6.2" });
   hosts[0].crash();
   assert.equal(service.status().state, "restarting");
   assert.equal(hosts.length, 1);
@@ -82,7 +82,7 @@ test("fixed IPC methods enforce local sender checks and discard renderer argumen
   assert.deepEqual([...handlers.keys()], ["sealbridge:status", "sealbridge:retry"]);
   assert.throws(() => handlers.get("sealbridge:status")({ local: false }));
   const response = handlers.get("sealbridge:status")({ local: true }, { privateKey: "fixture-secret" });
-  assert.deepEqual(response, { state: "ready", did, version: "0.5.0" });
+  assert.deepEqual(response, { state: "ready", did, version: "0.6.2" });
   assert.equal(JSON.stringify(response).includes("fixture-secret"), false);
 });
 
@@ -92,7 +92,7 @@ test("readiness waits for both channels and ignores identity from an older gener
   const service = createCoreService({ runtimeDir: await fixtureRuntime(t), identityTimeoutMs: 1000, hostFactory(options) {
     settings.push(options);
     events.emit("created");
-    return { async start() { return { initialize: { serverInfo: { version: "0.5.0" } } }; }, async close() {} };
+    return { async start() { return { initialize: { serverInfo: { version: "0.6.2" } } }; }, async close() {} };
   } });
   t.after(() => service.close());
   const firstCreated = once(events, "created");
@@ -114,7 +114,7 @@ test("missing identity times out and close cancels the wait", { timeout: 10000 }
   const runtimeDir = await fixtureRuntime(t);
   const events = new EventEmitter();
   const make = () => createCoreService({ runtimeDir, identityTimeoutMs: 30, maxRestarts: 0,
-    hostFactory: () => ({ async start() { events.emit("started"); return { initialize: { serverInfo: { version: "0.5.0" } } }; }, async close() {} }) });
+    hostFactory: () => ({ async start() { events.emit("started"); return { initialize: { serverInfo: { version: "0.6.2" } } }; }, async close() {} }) });
   const missing = make();
   assert.equal((await missing.start()).state, "failed");
   await missing.close();
@@ -140,6 +140,6 @@ test("identity alone cannot mark MCP ready", { timeout: 10000 }, async t => {
   const pending = service.start();
   await started.promise;
   assert.equal(service.status().state, "starting");
-  ready({ initialize: { serverInfo: { version: "0.5.0" } } });
+  ready({ initialize: { serverInfo: { version: "0.6.2" } } });
   assert.equal((await pending).state, "ready");
 });
