@@ -1,4 +1,5 @@
 import { cloudAsleep, onCloudPower } from "../lib/cloud-power";
+import { navigatePage } from "./page-navigation";
 import { api, ApiError } from "./api";
 import {
   createContext,
@@ -1000,17 +1001,10 @@ export function reducer(state: AppState, action: Action): AppState {
       };
     case "showHome":
     case "showInbox":
-      return { ...state, activeView: action.type === "showHome" ? "home" : "inbox", settingsOpen: false, appSettingsOpen: false, pluginsOpen: false };
     case "showChat":
-      return state.activeView === "chat" ? state : { ...state, activeView: "chat" };
     case "showTeamMap":
     case "showFiles": case "showWebPanel":
-      return {
-        ...state,
-        activeView: action.type === "showFiles" ? "files" : action.type === "showWebPanel" ? "web-panel" : "team-map",
-        filesSuggest: action.type === "showFiles" && action.suggest?.length ? action.suggest : null, webPanelId: action.type === "showWebPanel" ? action.id : state.webPanelId,
-        settingsOpen: false, computerOpen: false, inspectorOpen: false, activityOpen: false, appSettingsOpen: false, pluginsOpen: false,
-      };
+      return navigatePage(state, action);
     case "routinesHydrated":
       return { ...state, routines: action.routines, routineRuns: trimRoutineRuns(action.runs), routinesLoadState: "ready" };
     case "routinesLoadFailed":
