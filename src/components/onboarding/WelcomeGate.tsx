@@ -1,3 +1,4 @@
+import { DesktopWelcome } from "../../features/sealbridge/DesktopWelcome";
 import { useEffect, useState } from "react";
 import { emailGateDone } from "@/lib/analytics";
 import { clearWelcomeDraft } from "@/lib/welcome-draft";
@@ -68,6 +69,7 @@ export function WelcomeGate({ viewer }: { viewer: WelcomeViewer | null }) {
   if (state.appSettingsOpen && (["desktopWorkspaces", "organization"].includes(state.appSettingsSection) ||
     (state.appSettingsSection === "cloudAccount" && state.appSettingsCloudLink > 0))) return null;
   if (!state.welcomeOpen && !due) return null;
+  if (window.ogb?.sealbridge) return <DesktopWelcome onDone={() => { setDismissed(true); dispatch({ type: "toggleWelcome", open: false }); }} />;
   const fallback = state.bots.find((b) => !b.hidden && b.chiefOfStaff) ?? state.bots.find((b) => !b.hidden) ?? null;
   const replay = state.welcomeOpen && !due;
   return (

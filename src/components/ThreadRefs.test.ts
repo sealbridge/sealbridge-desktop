@@ -131,8 +131,17 @@ describe("ThreadLink", () => {
 });
 
 describe("openChatLink", () => {
-  const state = async () => ({ ...(await import("@/state/store")).initialState, bots: [scout, ada], groups: [room, dm], selectedId: "ada" });
+  const state = async () => ({ ...(await import("@/state/store")).initialState, activeView: "chat" as const, bots: [scout, ada], groups: [room, dm], selectedId: "ada" });
   const actions = (dispatch: ReturnType<typeof vi.fn>) => dispatch.mock.calls.map(([action]) => action);
+
+  it("opens a valid conversation link from home", async () => {
+    const dispatch = vi.fn();
+    expect(openChatLink(dispatch, "sealbridge://bot/scout", { ...await state(), activeView: "home" }, true)).toBe(true);
+    expect(actions(dispatch)).toEqual([
+      { type: "select", id: "scout" },
+      { type: "revealThread", threadId: "scout-main" },
+    ]);
+  });
 
   it("opens the chat a copied link names, and nothing else", async () => {
     const dispatch = vi.fn();

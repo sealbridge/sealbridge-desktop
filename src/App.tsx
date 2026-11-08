@@ -1,3 +1,4 @@
+import { DesktopHome } from "./features/sealbridge/DesktopHome";
 import { InviteView } from "./features/sealbridge/InviteView";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, Loader2, Menu } from "lucide-react";
@@ -353,7 +354,9 @@ function Shell({ viewer }: { viewer: WelcomeViewer | null }) {
           menuButtonRef.current?.focus();
         }}
       />}
-      {state.activeView === "team-map" ? (
+      {state.activeView === "home" || state.activeView === "inbox" ? (
+        <DesktopHome inbox={state.activeView === "inbox"} />
+      ) : state.activeView === "team-map" ? (
         <TeamMapPage />
       ) : state.activeView === "files" ? (
         <FilesView />
@@ -465,11 +468,11 @@ function Application() {
         </ThreadRefsProvider>
         <InviteView />
         <WelcomeGate viewer={viewer} />
-        <MausBotWelcome viewer={viewer} />
+        {!window.ogb?.sealbridge && <MausBotWelcome viewer={viewer} />}
         <CloudTimeZoneSync viewer={viewer} />
         <GuidedTour />
         <LiveCallHost />
-        <FirstConversationTour quiet={spotlightsQuiet(viewer)} />
+        {!window.ogb?.sealbridge && <FirstConversationTour quiet={spotlightsQuiet(viewer)} />}
       </StoreProvider>
     </DesktopCapabilitiesProvider>
   );

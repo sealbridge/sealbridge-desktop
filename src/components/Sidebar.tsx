@@ -1,4 +1,5 @@
 import { InvitePasteButton } from "../features/sealbridge/InvitePasteButton";
+import { DesktopNavigation } from "../features/sealbridge/DesktopNavigation";
 import { OrganizationIdentity } from "./OrganizationIdentity";
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type Dispatch } from "react";
 import { createPortal } from "react-dom";
@@ -1266,6 +1267,7 @@ export function Sidebar({ open, onClose, collapseToIcons = false }: {
         open ? "max-md:translate-x-0" : "max-md:-translate-x-full",
       )}
     >
+      <DesktopNavigation onClose={onClose} />
       <GlassScrollFrame className="flex-1" fade><PlaceTint />
       <GlassBar edge="top">
       <div

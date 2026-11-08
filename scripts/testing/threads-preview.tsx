@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "../../src/App";
+import { initialState } from "../../src/state/store";
 import { setAnalyticsEnabled, setEmailGateDone } from "../../src/lib/analytics";
 import { setAdvancedMode } from "../../src/lib/interface-mode";
 import { markSimpleModePromptSeen } from "../../src/lib/simple-mode-prompt";
@@ -19,4 +20,5 @@ else setEmailGateDone("skipped");
 // Every launch is a new browser, so the once-per-browser Simple mode popup shows only with ?simpleModePrompt=1.
 if (!new URLSearchParams(location.search).has("simpleModePrompt")) markSimpleModePromptSeen();
 applySkinChoice(readSkinChoice());
+initialState.activeView = "chat";
 createRoot(document.getElementById("root")!).render(<App />);

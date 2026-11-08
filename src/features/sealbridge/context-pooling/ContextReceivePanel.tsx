@@ -112,18 +112,23 @@ function Reply({ id, summary, sent }: { id: number; summary?: ContextGrantSummar
 export function ContextReceivePanel() {
   const [status, setStatus] = useState<ContextReceiveStatus>({ state: "idle", rows: [], compose: [], rejected: [], approvals: [] });
   const bridge = window.ogb?.sealbridge;
+  const [fetchFailed, setFetchFailed] = useState(false);
   useEffect(() => {
     if (!bridge?.receiveStatus) return;
     let active = true;
-    const refresh = () => { void bridge.receiveStatus().then(value => { if (active) setStatus(value); }).catch(() => {}); };
+    const refresh = () => { void bridge.receiveStatus().then(value => { if (active) { setStatus(value); setFetchFailed(false); } }).catch(() => { if (active) setFetchFailed(true); }); };
     refresh();
     const timer = setInterval(refresh, 500);
     return () => { active = false; clearInterval(timer); };
   }, [bridge]);
   return <section aria-label="受信箱" className="space-y-3">
     <h3>受信箱</h3>
+    <p>開くまでエージェントには渡りません</p>
+    <p>この版は人が手で答えます。開いても AI には渡しません</p>
+    {!bridge?.receiveStatus && <p>この版では受信箱の状態を表示できません。</p>}
+    {(fetchFailed || status.state === "failed") && <p role="alert">受信箱を確認できませんでした</p>}
+    {!fetchFailed && status.state === "ready" && status.rows.length === 0 && <p>開くのを待っている依頼はありません</p>}
     <p>相手が待っている間だけ開けます（既定10分）。過ぎたら送り直しが必要です。閉じると止まります。</p>
-    {status.state === "failed" && <p role="alert">受信を開始できませんでした。</p>}
     {status.rows.map(row => <article key={row.id} className="space-y-2 rounded border p-3">
       <p>{row.sender}</p>
       <p>{row.state === "expired" ? "期限切れ" : row.inspectionStatus === "pending" ? "隔離中・検査中" :

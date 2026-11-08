@@ -35,7 +35,7 @@ export function ContextPoolingView() {
     } catch { if (current === generation.current) setMessage("切り出しを確認できませんでした。再試行してください。"); }
     finally { setBusy(false); }
   };
-  return <details className="mt-3 text-ink">
+  return <details open className="mt-3 text-ink">
     <summary className="cursor-pointer">持ち寄り</summary>
     <section aria-label="持ち寄りの準備" className="space-y-4 py-4">
       <p>{copy.limit}</p>
