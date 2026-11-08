@@ -214,7 +214,7 @@ describe("opening a bot with threads hidden", () => {
   });
 });
 
-describe("launching the app on a bot", () => {
+describe("launching the app with a saved bot", () => {
   async function relaunch(shown: boolean) {
     flushSync(() => root.unmount());
     flushSync(() => { setAdvancedMode(true); setShowThreads(shown); });
@@ -223,20 +223,21 @@ describe("launching the app on a bot", () => {
     await launch();
   }
 
-  it("opens its main thread while threads are hidden, leaving the reply the bot was left on unread", async () => {
+  it("opens home while threads are hidden, leaving the saved bot and its unread reply untouched", async () => {
     await relaunch(false);
+    expect(state.activeView).toBe("home");
     expect(state.selectedId).toBe("scout");
     const switches = sent().filter((request) => request.startsWith("/api/bots/scout/tasks/"));
-    expect(switches).toHaveLength(1);
-    expect(switches[0]).toMatch(/^\/api\/bots\/scout\/tasks\/main-chat\b/);
+    expect(switches).toHaveLength(0);
     expect(reads()).toEqual([]);
-    expect(scoutNow().threadId).toBe("main-chat");
+    expect(scoutNow().threadId).toBe("left-behind");
     expect(unread("left-behind")).toBe(true);
     expect(threadsWhenTreeHidden(scoutNow(), {}).map((task) => task.threadId)).toContain("left-behind");
   });
 
   it("keeps the bot where it was while threads are shown, as it always has", async () => {
     await relaunch(true);
+    expect(state.activeView).toBe("home");
     expect(state.selectedId).toBe("scout");
     expect(sent().some((request) => request.startsWith("/api/bots/scout/tasks/"))).toBe(false);
     expect(scoutNow().threadId).toBe("left-behind");
