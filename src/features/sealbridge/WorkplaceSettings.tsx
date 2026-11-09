@@ -1,3 +1,4 @@
+import { Select } from "../../components/Select";
 import { useState } from "react";
 import type { WorkplaceBridge, WorkplaceDefinition, WorkplaceSettings as Settings } from "../../../shared/sealbridge";
 import { emptyWorkplace, workplaceExamples } from "./workplace-presets";
@@ -28,9 +29,9 @@ export function WorkplaceSettings({ bridge, settings, agent, onSettings }: { bri
       <details><summary>詳細欄</summary><div className="space-y-3">
         {argumentFields.map(([key, label]) => <label key={key} className="block">{label}（引数、1行に1件）<textarea className="ui-input block w-full" value={draft[key].join("\n")} onChange={e => update({ [key]: e.target.value ? e.target.value.split("\n") : [] })} /></label>)}
         <label className="block">ツールの範囲の説明<textarea className="ui-input block w-full" value={draft.scopeDescription} onChange={e => update({ scopeDescription: e.target.value })} /></label>
-        <label className="block">標準入力<select className="ui-input" value={draft.stdin} onChange={e => update({ stdin: e.target.value as WorkplaceDefinition["stdin"] })}><option value="none">渡さない（段0だけ）</option><option value="text-eof">全文を渡して入力を閉じる</option></select></label>
-        <label className="block">停止方法<select className="ui-input" value={draft.stop} onChange={e => update({ stop: e.target.value as WorkplaceDefinition["stop"] })}><option value="terminate">プロセス終了（結果の保持は未確認）</option><option value="interrupt-terminate">SIGINT、その後 SIGTERM</option></select></label>
-        <label className="block">記録<select className="ui-input" value={draft.retention} onChange={e => update({ retention: e.target.value as WorkplaceDefinition["retention"] })}><option value="unknown">未確認</option><option value="retained">記録が残る</option></select></label>
+        <label className="block">標準入力<Select value={draft.stdin} onChange={e => update({ stdin: e.target.value as WorkplaceDefinition["stdin"] })}><option value="none">渡さない（段0だけ）</option><option value="text-eof">全文を渡して入力を閉じる</option></Select></label>
+        <label className="block">停止方法<Select value={draft.stop} onChange={e => update({ stop: e.target.value as WorkplaceDefinition["stop"] })}><option value="terminate">プロセス終了（結果の保持は未確認）</option><option value="interrupt-terminate">SIGINT、その後 SIGTERM</option></Select></label>
+        <label className="block">記録<Select value={draft.retention} onChange={e => update({ retention: e.target.value as WorkplaceDefinition["retention"] })}><option value="unknown">未確認</option><option value="retained">記録が残る</option></Select></label>
       </div></details>
       <button className="ui-button" onClick={() => { void run(async () => { onSettings(await bridge.save(draft)); setDraft(undefined); setMessage("保存しました。起動・版の実行・受け渡しはしていません。"); }); }}>紐付けを保存</button>
     </fieldset>}

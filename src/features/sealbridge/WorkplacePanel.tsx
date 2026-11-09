@@ -1,3 +1,4 @@
+import { Select } from "../../components/Select";
 import { useEffect, useState } from "react";
 import { useStore } from "@/state/store";
 import { appendComposerDraft } from "@/lib/drafts";
@@ -54,14 +55,14 @@ export function WorkplacePanel({ agent }: { agent: string }) {
     <p>起こす・渡す・止めるは別の操作です。受け取った依頼からの転送（段2・段3）はこの版では使えません。</p>
     <button className="ui-button" onClick={() => { openedInternal.add(agent); setInternalOpen(true); dispatch({ type: "showChat" }); }}>Desktop 内の作業場を開く</button>
     <p>Desktop 内の作業場は既存のチャットです。プロセスを起こさず、以前の会話も読めます。開くだけでは本文を渡しません。</p>
-    <label className="block">自分の材料の種類<select className="ui-input" value={source} onChange={e => setSource(e.target.value as typeof source)}><option value="owner-draft">送る前の自分の下書き</option><option value="owner-file">自分で選んだ自分のファイルの場所</option></select></label>
+    <label className="block">自分の材料の種類<Select value={source} onChange={e => setSource(e.target.value as typeof source)}><option value="owner-draft">送る前の自分の下書き</option><option value="owner-file">自分で選んだ自分のファイルの場所</option></Select></label>
     <label className="block">渡す文の全文<textarea className="ui-input block w-full" value={text} onChange={e => setText(e.target.value)} /></label>
     <p>隔離中・検査できなかった・期限切れの依頼や、相手から受け取った中身をここに入れないでください。</p>
     <button className="ui-button" disabled={!internalOpen || !internalTarget || !text.trim() || busy || !bridge} onClick={() => { void run(async () => {
       if (!await bridge?.validateOwnerText(text)) throw new Error("秘密や招待トークンは渡せません。自分の材料を64 KB以内で入力してください。");
       setCard({ id: internalTarget!, action: "pass", name: "Desktop 内の作業場", executable: "internal", version: "Desktop", cwd: "Desktop", scope: "既存チャット", retention: "チャットの下書き・送信後の会話に残ります", level: 1, text, source });
     }); }}>Desktop 内の作業場へ渡す前に確認</button>
-    <label className="block">起こす段<select className="ui-input" value={level} onChange={e => setLevel(e.target.value === "1" ? 1 : 0)}><option value="0">段0 · 起こすだけ</option><option value="1">段1 · 自分の材料だけ</option></select></label>
+    <label className="block">起こす段<Select value={level} onChange={e => setLevel(e.target.value === "1" ? 1 : 0)}><option value="0">段0 · 起こすだけ</option><option value="1">段1 · 自分の材料だけ</option></Select></label>
     <label className="block"><input type="checkbox" checked={noRecord} onChange={e => setNoRecord(e.target.checked)} /> 確認した記録を残さない指定を使う</label>
     {selected.map(d => {
       const row = status.find(s => s.id === d.id), verified = settings.verified[d.id];
