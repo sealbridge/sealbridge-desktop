@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ContextSelectionDraft } from "../../../../shared/context-pooling";
 import type { ContextRecipient, ContextSendStatus } from "../../../../shared/sealbridge";
 import { Select } from "../../../components/Select";
+import { SealbridgeApprovalCard } from "../SealbridgeApprovalCard";
 
 export function ContextSendPanel({ draft, ready }: { draft: ContextSelectionDraft; ready: boolean }) {
   const bridge = window.ogb?.sealbridge;
@@ -38,17 +39,15 @@ export function ContextSendPanel({ draft, ready }: { draft: ContextSelectionDraf
     {status.deliverable && <pre className="whitespace-pre-wrap">{status.deliverable}</pre>}
     {!!status.delegateeOwnerDids?.length && <p>2段目の相手 {status.delegateeOwnerDids.join("、")}</p>}
     {status.peerRejected && <p role="alert">相手の版が持ち寄りに対応していない可能性があります</p>}
-    {card && <div role="dialog" aria-label="持ち寄りの承認" onKeyDown={event => { if (event.key === "Enter") event.preventDefault(); }}>
-      <p>{card.gate === "final_verification" ? "納品の最終確認" : "この内容で送りますか"}</p>
+    {card && <SealbridgeApprovalCard label="持ち寄りの承認" title={card.gate === "final_verification" ? "納品の最終確認" : "この内容で送りますか"}
+      accept={card.gate === "final_verification" ? "最終確認を承認する" : "この内容で送る"} cancel="拒否する" onDecision={accept => { void bridge?.answerContext(card.id, accept); }}>
       <p>宛先 {card.recipient} · {card.mode} · 観点 {card.angle}</p>
       <p>許可する列 {card.allowedCount} · 拒否する列 {card.deniedCount} · {card.bytes} バイト · 期限 {card.expiresAt}</p>
       <p>grant ダイジェスト <code>{card.digest}</code></p>
       {card.deliverable && <pre className="whitespace-pre-wrap">{card.deliverable}</pre>}
       {card.deliverableDigest && <p>納品物ダイジェスト <code>{card.deliverableDigest}</code></p>}
       {!!card.delegateeOwnerDids?.length && <p>2段目の相手 {card.delegateeOwnerDids.join("、")}</p>}
-      <button type="button" className="ui-button" onClick={() => { void bridge?.answerContext(card.id, false); }}>拒否する</button>
-      <button type="button" className="ui-button" onClick={() => { void bridge?.answerContext(card.id, true); }}>{card.gate === "final_verification" ? "最終確認を承認する" : "この内容で送る"}</button>
-    </div>}
+    </SealbridgeApprovalCard>}
     {!terminal && status.state !== "idle" && <button type="button" className="ui-button" onClick={() => { void bridge?.cancelContext(); }}>中止</button>}
     {error && <p role="alert">{error}</p>}
   </section>;

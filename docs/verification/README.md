@@ -320,6 +320,10 @@ desktop routing, cancellation, and computer authority cleanup.
 
 ## Evidence
 
+The [Desktop workplace fixture](desktop-workplace.md) checks the own-detail
+chat entrance and approved external launch/stop against an isolated server,
+real renderer and fake workplace. Port tests cover exact stdin handoff.
+
 The [Sealbridge Desktop home fixture](desktop-home.md) exercises the home and
 first-run renderer with synthetic public bridge state. Its documented local
 Electron startup failure means the full workflow is not yet proven there.

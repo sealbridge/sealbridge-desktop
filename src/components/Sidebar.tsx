@@ -1243,6 +1243,7 @@ export function Sidebar({ open, onClose, collapseToIcons = false }: {
     </div>
   );
 
+  if (window.ogb?.sealbridge && state.activeView !== "chat") return <aside className="flex shrink-0 flex-col border-r border-hairline bg-panel"><DesktopNavigation onClose={onClose} /><InvitePasteButton /></aside>;
   return (
     <aside
       ref={sidebarRef}

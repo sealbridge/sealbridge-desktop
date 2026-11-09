@@ -16,3 +16,15 @@ export function createAllWindowsClosedQuit({ app, platform = process.platform, a
     },
   };
 }
+// Linux package managers and watchdogs stop apps with SIGTERM/SIGINT: the first becomes a normal quit,
+// a second keeps Node's default force-quit (`once` listeners).
+export function registerSignalQuit({ app, process }) {
+  let signalQuitRequested = false;
+  const requestSignalQuit = () => {
+    if (signalQuitRequested) return;
+    signalQuitRequested = true;
+    app.quit();
+  };
+  process.once("SIGINT", requestSignalQuit);
+  process.once("SIGTERM", requestSignalQuit);
+}

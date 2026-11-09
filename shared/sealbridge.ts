@@ -9,6 +9,7 @@ export interface SealbridgeStatus {
 
 /** Fixed local desktop actions; no arbitrary core methods or tool arguments are accepted. */
 export interface SealbridgeBridge {
+  workplace?: WorkplaceBridge;
   receiveStatus(): Promise<ContextReceiveStatus>;
   receiveAction(id: string, action: "open" | "discard"): Promise<{ ok: boolean }>;
   receiveReply(id: number, body: string): Promise<{ ok: boolean }>;
@@ -28,6 +29,74 @@ export interface SealbridgeBridge {
   pasteInvite(): Promise<{ ok: boolean }>;
   status(): Promise<SealbridgeStatus>;
   retry(): Promise<SealbridgeStatus>;
+}
+
+/** Local app preferences. Arguments are individual argv entries, never shell source. */
+export interface WorkplaceDefinition {
+  id: string;
+  name: string;
+  executable: string;
+  args: string[];
+  cwd: string;
+  versionArgs: string[];
+  scopeArgs: string[];
+  scopeDescription: string;
+  noRecordArgs: string[];
+  stdin: "none" | "text-eof";
+  stop: "interrupt-terminate" | "terminate";
+  retention: "retained" | "unknown";
+}
+/** Shared definitions and explicit choices per public identity; no conversation or credentials. */
+export interface WorkplaceSettings {
+  definitions: WorkplaceDefinition[];
+  agents: Record<string, string[]>;
+  verified: Record<string, { version: string; scope: boolean; noRecord: boolean; stdin: boolean; stop: boolean }>;
+}
+/** Memory-only status; output has passed the desktop's secret redaction. */
+export interface WorkplaceStatus {
+  id: string;
+  name: string;
+  running: boolean;
+  level: 0 | 1;
+  delivered: boolean;
+  output: string;
+  notice: string;
+}
+/** The six replaceable harness operations. Discovery and version execution require separate owner actions. */
+export interface WorkplacePort {
+  find(definition: WorkplaceDefinition): Promise<string | null>;
+  version(definition: WorkplaceDefinition, executable: string): Promise<string>;
+  launchSpec(definition: WorkplaceDefinition, executable: string, level: 0 | 1, noRecord: boolean): { executable: string; args: string[]; cwd: string };
+  stdin(child: unknown, text: string): Promise<void>;
+  stop(child: unknown, method: WorkplaceDefinition["stop"], force: boolean): Promise<boolean>;
+  retention(definition: WorkplaceDefinition, noRecord: boolean): string;
+}
+/** Local-only bridge. One-use decisions pin the full launch specification or exact owner text. */
+export interface WorkplaceBridge {
+  validateOwnerText(text: string): Promise<boolean>;
+  settings(): Promise<WorkplaceSettings>;
+  save(definition: WorkplaceDefinition): Promise<WorkplaceSettings>;
+  select(agent: string, ids: string[]): Promise<WorkplaceSettings>;
+  find(id: string): Promise<string | null>;
+  test(id: string): Promise<WorkplaceSettings>;
+  verify(id: string, checks: { scope: boolean; noRecord: boolean; stdin: boolean; stop: boolean }): Promise<WorkplaceSettings>;
+  status(): Promise<WorkplaceStatus[]>;
+  prepare(input: { action: "launch" | "pass" | "stop" | "force"; agent: string; id: string; level?: 0 | 1; noRecord?: boolean; text?: string; source?: "owner-draft" | "owner-file" }): Promise<WorkplaceDecision>;
+  decide(id: string, accept: boolean): Promise<void>;
+}
+/** Full immutable approval projection; text is never summarized or persisted by Desktop. */
+export interface WorkplaceDecision {
+  id: string;
+  action: "launch" | "pass" | "stop" | "force";
+  name: string;
+  executable: string;
+  version: string;
+  cwd: string;
+  scope: string;
+  retention: string;
+  level: 0 | 1;
+  text?: string;
+  source?: "owner-draft" | "owner-file";
 }
 
 /** Token-free invitation preview. The id identifies a pending desktop decision. */

@@ -28,6 +28,8 @@ export interface DesktopLanguageBridge {
   onChange(listener: (language: string) => void): () => void;
 }
 export interface DesktopPrefs {
+  workplaces(): import("../shared/sealbridge").WorkplaceSettings;
+  setWorkplaces(value: import("../shared/sealbridge").WorkplaceSettings): void;
   seen(): string[];
   markSeen(id: string): void;
   analytics(): boolean | null;

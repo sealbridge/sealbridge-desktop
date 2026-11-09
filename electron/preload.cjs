@@ -128,6 +128,9 @@ const bridge = {
   /** This app's version, and whether this page is this app's own (served by this computer, not a server from the Server menu). */
   app: { version: appVersion, ownPage: isLocalPage },
   sealbridge: {
+    workplace: Object.fromEntries(["settings", "save", "select", "find", "test", "verify", "status", "prepare", "decide", "validateOwnerText"].map(method =>
+      [method, (...args) => !["test", "verify", "decide"].includes(method) || navigator.userActivation?.isActive === true
+        ? ipcRenderer.invoke(`sealbridge:workplace-${method}`, ...args) : Promise.reject(new Error("Owner gesture required"))])),
     receiveStatus: () => ipcRenderer.invoke("sealbridge:receive-status"),
     receiveAction: (id, action) => ipcRenderer.invoke("sealbridge:receive-action", id, action),
     receiveReply: (id, body) => ipcRenderer.invoke("sealbridge:receive-reply", id, body),

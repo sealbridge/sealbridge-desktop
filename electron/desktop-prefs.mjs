@@ -3,6 +3,7 @@
 // the person hid the window's rail of places and whether they turned the window's frame off.
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
+import { parseWorkplaceSettings } from "./sealbridge/workplace.mjs";
 import { onboardingHints } from "./onboarding-record.mjs";
 import { DEFAULT_TALK_KEY, isTalkKey } from "./talk-keys.mjs";
 import { createUpdatesConsent, parseUpdatesConsent, registerUpdatesConsent } from "./updates-consent.mjs";
@@ -46,7 +47,7 @@ function parse(raw) {
   const quickAsks = record.quickAsks && typeof record.quickAsks === "object" && !Array.isArray(record.quickAsks)
     ? Object.fromEntries(Object.entries(record.quickAsks).flatMap(([server, chat]) => { const parsed = parseChat(chat); return parsed ? [[server, parsed]] : []; }))
     : {};
-  return { seen, ...(typeof record.analytics === "boolean" ? { analytics: record.analytics } : {}),
+  return { seen, ...(record.workplaces ? { workplaces: parseWorkplaceSettings(record.workplaces) } : {}), ...(typeof record.analytics === "boolean" ? { analytics: record.analytics } : {}),
     ...(isLanguage(record.language) ? { language: record.language } : {}),
     ...(typeof record.installId === "string" && INSTALL_ID.test(record.installId) ? { installId: record.installId } : {}),
     ...(updatesConsent ? { updatesConsent } : {}),
@@ -68,6 +69,8 @@ export function createDesktopPrefs({ read, write }) {
   };
   const save = next => { record = next; try { write(next); } catch {} };
   return {
+    workplaces: () => parseWorkplaceSettings(current().workplaces),
+    setWorkplaces(value) { save({ ...current(), workplaces: parseWorkplaceSettings(value) }); },
     seen: () => [...current().seen],
     markSeen(id) {
       const saved = current();

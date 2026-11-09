@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useStore } from "@/state/store";
 import { ContextPoolingView } from "./context-pooling/ContextPoolingView";
 import { useIdentity } from "./useIdentity";
+import { WorkplacePanel } from "./WorkplacePanel";
 
 export function DesktopHome({ inbox }: { inbox: boolean }) {
   const { dispatch } = useStore();
@@ -25,7 +26,7 @@ export function DesktopHome({ inbox }: { inbox: boolean }) {
           <p>{did ? "この端末のエージェント" : "未確認"}</p>
           <button className="ui-button" onClick={() => setDetail(!detail)}>届け先の詳細</button>
           <p className="break-all">{did ? detail ? did : `${did.slice(0, 18)}…${did.slice(-6)}` : "未確認"}</p>
-          {detail && <><p>名前: 未確認</p><p>鍵の状態: {did ? "OSの鍵保管庫で準備済み" : "未確認"}</p></>}
+          {detail && <><p>名前: 未確認</p><p>鍵の状態: {did ? "OSの鍵保管庫で準備済み" : "未確認"}</p>{did && <WorkplacePanel agent={did} />}</>}
         </section>
         <section className="space-y-3"><h2>つながり</h2>
           <p>この版では署名を確認したつながりの総数・一覧とチャンネルの状態を表示できません。</p>

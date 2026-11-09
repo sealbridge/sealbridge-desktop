@@ -7,7 +7,7 @@ import { desktopInvites, registerInviteIpc } from "./invites.mjs";
 import { createInviteProcess } from "./invite-process.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
 import path from "node:path";
-import { createCoreService, registerCoreIpc } from "./service.mjs";
+import { createCoreService, registerCoreIpc, createCoreClose } from "./service.mjs";
 
 export function startDesktopCore({ app, ipcMain, localOnly }) {
   const service = createCoreService({
@@ -23,12 +23,10 @@ export function startDesktopCore({ app, ipcMain, localOnly }) {
   registerContextSendIpc({ ipcMain, localOnly, sender });
   const receiver = createDesktopReceiver({ dataDir: path.join(app.getPath("userData"), "sealbridge-core"), runtimeDir });
   registerContextReceiveIpc({ ipcMain, localOnly, receiver });
-  app.on("before-quit", () => receiver.stop());
-  app.on("before-quit", () => sender.cancel(true));
   registerInviteIpc({ ipcMain, localOnly, clipboard });
   const operate = createInviteProcess({ dataDir: path.join(app.getPath("userData"), "sealbridge-core"),
     runtimeDir: app.isPackaged ? path.join(process.resourcesPath, "sealbridge-runtime") : developmentRuntimeDir });
   const prepareInvites = status => { if (status.state === "ready") { void desktopInvites.ready(operate); void receiver.start(); } return status; };
   void service.start().then(prepareInvites);
-  return service;
+  return { ...service, close: createCoreClose({ service, receiver, sender }) };
 }

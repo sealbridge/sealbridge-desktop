@@ -157,11 +157,12 @@ async function makeMissingFolders(folder, relative) {
   }
 }
 
-function killTree(child) {
+export function killTree(child, force = true) {
   if (!child.pid) return;
   if (process.platform === "win32") {
-    const killer = spawn("taskkill", ["/PID", String(child.pid), "/T", "/F"], { windowsHide: true, stdio: "ignore" });
-    killer.on("error", () => child.kill());
+    const killer = spawn("taskkill", ["/PID", String(child.pid), "/T", ...(force ? ["/F"] : [])], { windowsHide: true, stdio: "ignore" });
+    killer.on("error", () => { if (force) child.kill(); });
+    return new Promise(resolve => { killer.once("error", resolve); killer.once("close", resolve); });
   } else {
     try { process.kill(-child.pid, "SIGKILL"); } catch { child.kill("SIGKILL"); }
   }

@@ -86,3 +86,15 @@ export function registerCoreIpc({ ipcMain, localOnly, service }) {
   ipcMain.handle("sealbridge:status", localOnly("sealbridge:status", () => service.status()));
   ipcMain.handle("sealbridge:retry", localOnly("sealbridge:retry", () => service.retry()));
 }
+
+export function createCoreClose({ service, receiver, sender }) {
+  let closed;
+  return () => {
+    if (!closed) {
+      receiver.stop();
+      sender.cancel(true);
+      closed = Promise.resolve(service.close());
+    }
+    return closed;
+  };
+}
