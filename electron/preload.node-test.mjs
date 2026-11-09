@@ -169,10 +169,23 @@ test("a Cloud link arriving before React subscriptions is delivered exactly once
 
 test("Sealbridge bridge forwards only fixed status and retry operations", async () => {
   const before = invocations.length;
-  assert.deepEqual(Object.keys(exposed.api.sealbridge).sort(), ["answerContext", "cancelContext", "contextRecipients", "contextStatus", "deleteReceivedAudit", "inviteDecision", "invites", "pasteInvite", "prepareContext", "receiveAction", "receiveDecide", "receiveNarrow", "receiveReply", "receiveStatus", "receivedAudits", "resetContext", "retry", "startContext", "status"]);
+  assert.deepEqual(Object.keys(exposed.api.sealbridge).sort(), ["answerContext", "cancelContext", "contextRecipients", "contextStatus", "deleteReceivedAudit", "inviteDecision", "invites", "pasteInvite", "prepareContext", "receiveAction", "receiveDecide", "receiveNarrow", "receiveReply", "receiveStatus", "receivedAudits", "resetContext", "retry", "startContext", "status", "workplace"]);
   await exposed.api.sealbridge.status({ privateKey: "fixture-only" });
   await exposed.api.sealbridge.retry("arbitrary-tool");
   assert.deepEqual(invocations.slice(before), [["sealbridge:status"], ["sealbridge:retry"]]);
+});
+
+test("workplace execution and decisions require active owner gestures in the local preload", async () => {
+  const before = invocations.length;
+  Object.defineProperty(navigator, "userActivation", { configurable: true, value: { isActive: false } });
+  try {
+    await exposed.api.sealbridge.workplace.settings();
+    for (const method of ["test", "verify", "decide"]) await assert.rejects(exposed.api.sealbridge.workplace[method]("fixture", true), /Owner gesture/);
+    assert.deepEqual(invocations.slice(before), [["sealbridge:workplace-settings"]]);
+    Object.defineProperty(navigator, "userActivation", { configurable: true, value: { isActive: true } });
+    await exposed.api.sealbridge.workplace.decide("one-use-card", true);
+    assert.deepEqual(invocations.at(-1), ["sealbridge:workplace-decide", "one-use-card", true]);
+  } finally { delete navigator.userActivation; }
 });
 
 test("invitation preload accepts only opaque decision IDs and fixed choices", async () => {

@@ -1,6 +1,8 @@
 import "./sealbridge/app-identity.mjs";
 import { setInviteReveal, revealLinkWindow } from "./sealbridge/link-window.mjs";
 import { startDesktopCore } from "./sealbridge/desktop-core.mjs";
+import { createWorkplaces, registerWorkplaceIpc } from "./sealbridge/workplace.mjs";
+import { createWorkplaceQuit } from "./sealbridge/workplace-quit.mjs";
 import { app, autoUpdater as nativeAutoUpdater, BrowserWindow, Tray, WebContentsView, clipboard, desktopCapturer, dialog, globalShortcut, ipcMain, Menu, nativeImage, Notification, powerMonitor, powerSaveBlocker, safeStorage, screen, session, shell, systemPreferences, utilityProcess, nativeTheme } from "electron";
 import { createRequire } from "node:module";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -36,7 +38,7 @@ import { packageUrlFromCommandLine, packageUrlFromDeepLink } from "./package-lin
 import { chatLinkFrom, chatLinkFromCommandLine } from "./chat-link.mjs";
 import { createOrganizationEntry, isOrganizationDeepLink, takeOrganizationDeepLink, organizationRestartIntent, withOrganizationRestartIntent, withoutOrganizationRestartIntent } from "./organization-entry.mjs";
 import { windowBackground, windowChromeOptions } from "./window-chrome.mjs";
-import { createAllWindowsClosedQuit } from "./window-all-closed.mjs";
+import { createAllWindowsClosedQuit, registerSignalQuit } from "./window-all-closed.mjs";
 import { createStartupScreen } from "./startup-screen.mjs";
 import { createSystemTray } from "./system-tray.mjs";
 import { createLendingIndicator } from "./lending-indicator.mjs";
@@ -2883,8 +2885,10 @@ setCuaStateListener((connection) => {
     console.error("[desktop] capability broadcast failed:", error);
   });
 });
-let sealbridgeCore;
+let sealbridgeCore, workplaces;
 app.whenReady().then(async () => {
+  workplaces = createWorkplaces({ prefs: { workplaces: () => desktopPrefs.workplaces(), setWorkplaces: value => desktopPrefs.setWorkplaces(value) } });
+  registerWorkplaceIpc({ ipcMain, localOnly, workplaces });
   sealbridgeCore = startDesktopCore({ app, ipcMain, localOnly });
   await evictStartupCacheOnce({
     userData: app.getPath("userData"),
@@ -3175,19 +3179,11 @@ const allWindowsClosedQuit = createAllWindowsClosedQuit({
 // The embedded CUA daemon's async cleanup cannot run after the host exits, so the first quit waits for it (capped).
 const CUA_STOP_TIMEOUT_MS = 2500;
 let cuaCleanedUp = false;
-let signalQuitRequested = false;
+registerSignalQuit({ app, process });
 
-// Linux package managers and watchdogs stop apps with SIGTERM/SIGINT: the first becomes a normal quit,
-// a second keeps Node's default force-quit (`once` listeners).
-const requestSignalQuit = () => {
-  if (signalQuitRequested) return;
-  signalQuitRequested = true;
-  app.quit();
-};
-process.once("SIGINT", requestSignalQuit);
-process.once("SIGTERM", requestSignalQuit);
-
+const workplaceQuit = createWorkplaceQuit({ workplaces: () => workplaces, dialog, quit: () => app.quit() });
 app.on("before-quit", (e) => {
+  if (workplaceQuit(e)) return;
   talk.close();
   desktopShutdownStarted = true;
   startupScreen?.dispose();
