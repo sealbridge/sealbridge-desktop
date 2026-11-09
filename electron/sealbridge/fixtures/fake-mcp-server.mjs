@@ -17,7 +17,7 @@ if (mode === "hang") {
   if (mode === "exit") { process.exit(1); }
   if (mode === "slow") return;
   let result = {};
-  if (frame.method === "initialize") result = { protocolVersion: "2024-11-05", serverInfo: { name: "fixture", version: "0.5.0" }, capabilities: {} };
+  if (frame.method === "initialize") result = { protocolVersion: "2024-11-05", serverInfo: { name: "fixture", version: "0.6.2" }, capabilities: {} };
   if (frame.method === "tools/list") {
     if (!initialized) { send({ jsonrpc: "2.0", id: frame.id, error: { code: -32000, message: "not initialized" } }); return; }
     result = { tools: [{ name: "acp_discover_workers" }] };
