@@ -4,7 +4,7 @@ import path from "node:path";
 import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { pathToFileURL } from "node:url";
+import { loadCoreSdk } from "./sdk.mjs";
 import { readFileSync } from "node:fs";
 import { developmentRuntimeDir } from "./runtime.mjs";
 import { auditFileName, deleteContextAudit, listContextAudits, projectAuditRecord, registerContextAuditIpc } from "./context-audit.mjs";
@@ -104,7 +104,7 @@ test("sealed audits keep output on disk, show hand-over only, and fail closed wh
   const dir = await mkdtemp(path.join(tmpdir(), "dw3-audit-seal-"));
   t.after(() => rm(dir, { recursive: true, force: true }));
   await mkdir(path.join(dir, "context-audits"));
-  const sdk = await import(pathToFileURL(path.join(developmentRuntimeDir, "node_modules/sealbridge/dist/cli/dist/sdk.js")).href);
+  const sdk = await loadCoreSdk(path.join(developmentRuntimeDir, "node_modules/sealbridge"));
   const handAnswer = "DW3_HAND_ANSWER";
   const viewAnswer = "DW3_VIEW_ANSWER";
   const calls = { parse: 0, verify: 0 };

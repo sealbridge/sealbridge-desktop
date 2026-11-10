@@ -1,6 +1,6 @@
 import path from "node:path";
 import { realpathSync } from "node:fs";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline";
 import { resolveCoreContext } from "./bootstrap.mjs";
 import { executeContextSend, contextSendFailureState } from "./context-send-core.mjs";
@@ -39,15 +39,14 @@ if (process.argv[1] && normalizedEntryPath(process.argv[1]) === normalizedEntryP
       const { draft, target, auditPath } = message;
       if (!path.isAbsolute(auditPath ?? "")) throw new Error();
       const packageDir = fileURLToPath(new URL("./node_modules/sealbridge/", import.meta.url));
-      const sdk = await import(pathToFileURL(path.join(packageDir, "dist/cli/dist/sdk.js")).href);
-      const { signApproval } = await import(pathToFileURL(path.join(packageDir, "dist/packages/core/dist/index.js")).href);
-      const { owner, identityOptions, load } = await resolveCoreContext({ packageDir, dataDir: process.env.SEALBRIDGE_DATA_DIR });
+      const { owner, identityOptions, sdk } = await resolveCoreContext({ packageDir, dataDir: process.env.SEALBRIDGE_DATA_DIR });
+      const { signApproval } = sdk;
       const trust = new sdk.WorkerTrustStore(owner, { path: sdk.workerIntakePath(owner.did, identityOptions) });
       const connected = trust.listConnections().find(row => row.state === "connected" &&
         row.peerOwnerDid === target.peerOwnerDid && row.peerAgentDid === target.peerAgentDid && row.relayUrl === target.relayUrl);
       if (!connected || target.peerOwnerDid === owner.did) throw new Error("CONNECTION_REQUIRED");
       // Sealbridge 0.5.0 connection consent uses the 0.2.0 protocol, including for unpublished peers.
-      const { ProtocolPeerStore } = await load("protocol-peer-store");
+      const { ProtocolPeerStore } = sdk;
       const observed = new ProtocolPeerStore(owner, identityOptions);
       const protocolPeers = createProtocolPeers(observed, connected);
       const bytes = Buffer.byteLength(JSON.stringify(draft.body));

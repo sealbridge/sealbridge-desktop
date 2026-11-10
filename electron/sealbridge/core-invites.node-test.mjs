@@ -3,13 +3,13 @@ import test from "node:test";
 import { mkdtemp, readFile, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { pathToFileURL } from "node:url";
+import { loadCoreSdk } from "./sdk.mjs";
 import { createCoreInvites } from "./core-invites.mjs";
 import { bootstrapCore, resolveCoreContext } from "./bootstrap.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
 
 const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge");
-const load = name => import(pathToFileURL(path.join(packageDir, "dist", name)).href);
+
 async function allBytes(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
   const buffers = await Promise.all(entries.map(entry => entry.isDirectory()
@@ -30,8 +30,8 @@ test("pinned core imports into OS secret store, keeps DID, confirms only limited
   const options = { packageDir, dataDir, keyringLoader, connectionOptions: {
     transportFactory: () => ({ send: async frame => { frames.push(frame); }, receive: async () => [] }),
   } };
-  const core = await load("packages/core/dist/index.js");
-  const runtime = await load("packages/runtime/dist/index.js");
+  const core = await loadCoreSdk(packageDir);
+  const runtime = core;
   const first = await bootstrapCore(options);
   const peer = core.generateKeyPair();
   const agentCard = core.createSignedAgentCard({ name: "G4 fixture peer", agentDid: peer.did,

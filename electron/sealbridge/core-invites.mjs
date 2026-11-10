@@ -1,13 +1,9 @@
-import path from "node:path";
-import { pathToFileURL } from "node:url";
 import { resolveCoreContext } from "./bootstrap.mjs";
 import { publicInvite } from "./invite-public.mjs";
 
 export async function createCoreInvites(options) {
-  const { owner, identityOptions } = await resolveCoreContext(options);
-  const load = name => import(pathToFileURL(path.join(options.packageDir, "dist", name)).href);
-  const { InviteStore } = await load("packages/runtime/dist/invite-store.js");
-  const { WorkerTrustStore, workerIntakePath } = await load("packages/runtime/dist/index.js");
+  const { owner, identityOptions, sdk } = await resolveCoreContext(options);
+  const { InviteStore, WorkerTrustStore, workerIntakePath, connectionsCommand } = sdk;
   const trust = new WorkerTrustStore(owner, { path: workerIntakePath(owner.did, identityOptions) });
   const store = await InviteStore.open(owner, identityOptions);
   return {
@@ -27,7 +23,6 @@ export async function createCoreInvites(options) {
     },
     remove: ref => ({ removed: store.remove(ref) }),
     async confirm(ref) {
-      const { connectionsCommand } = await load("cli/dist/connections.js");
       await connectionsCommand(["confirm-invite", ref], { ...options.connectionOptions, identityOptions,
         review: async () => true, output: () => {} });
       return { state: "pending-connection" };

@@ -7,3 +7,4 @@ import "./sealbridge/identity-store.node-test.mjs";
 import "./sealbridge/runtime.node-test.mjs";
 import "./sealbridge/live.node-test.mjs";
 import "./sealbridge/invites.node-test.mjs";
+import "./sealbridge/sdk.node-test.mjs";

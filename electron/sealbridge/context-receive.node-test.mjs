@@ -14,9 +14,10 @@ import { PassThrough } from "node:stream";
 import { launchContextReceive, createDesktopReceiver, registerContextReceiveIpc } from "./context-receive.mjs";
 import { executeContextSend } from "./context-send-core.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
+import { loadCoreSdk } from "./sdk.mjs";
 
 const load = name => import(pathToFileURL(path.join(developmentRuntimeDir, "node_modules/sealbridge/dist", name)).href);
-const sdk = await load("cli/dist/sdk.js");
+const sdk = await loadCoreSdk(path.join(developmentRuntimeDir, "node_modules/sealbridge"));
 const core = await load("packages/core/dist/index.js");
 const relayApi = await load("packages/relay/dist/index.js");
 const input = "DW2_INPUT_" + "TRANSIENT_MARKER" + "x".repeat(4100);
@@ -54,7 +55,7 @@ async function fixture(t, options = {}) {
   connect(store, sender, relay.url);
   const events = [], sending = new Set();
   const controller = new AbortController();
-  const receiver = createContextReceiver({ sdk, owner, signApproval: core.signApproval, identityOptions, dataDir: dir,
+  const receiver = createContextReceiver({ sdk, owner, signApproval: sdk.signApproval, identityOptions, dataDir: dir,
     auditPath: path.join(dir, "context-audits", "receive.jsonl"), relay: relay.url, send: event => events.push(event),
     workerOptions: { allowPrivateRelay: true, ...options.workerOptions }, reviewOptions: options.reviewOptions,
     enableRedelegation: options.enableRedelegation !== false });
@@ -62,7 +63,7 @@ async function fixture(t, options = {}) {
   const running = receiver.worker.start();
   running.catch(() => {});
   const send = (overrides = {}) => {
-    const result = executeContextSend({ sdk, owner: sender, signApproval: core.signApproval,
+    const result = executeContextSend({ sdk, owner: sender, signApproval: sdk.signApproval,
     draft: { ...draft, deliveryMode: options.mode ?? draft.deliveryMode }, signal: controller.signal, target: { peerOwnerDid: owner.did, relayUrl: relay.url },
     auditPath: path.join(dir, "context-audits", "send.jsonl"), identityOptions,
     ask: async () => true, send: event => events.push(event),
@@ -218,7 +219,7 @@ test("receiver projects interrupted handshakes without forwarding diagnostics", 
   const events = [];
   createContextReceiver({ sdk: { ...sdk, WorkerNode: class {
     constructor(options) { onEvent = options.onEvent; }
-  } }, owner: sdk.generateKeyPair(), signApproval: core.signApproval,
+  } }, owner: sdk.generateKeyPair(), signApproval: sdk.signApproval,
   identityOptions: { env: { SEALBRIDGE_DATA_DIR: dir } }, dataDir: dir,
   auditPath: path.join(dir, "context-audits", "receive.jsonl"), relay: "ws://127.0.0.1:1",
   enableRedelegation: false, send: event => events.push(event) });

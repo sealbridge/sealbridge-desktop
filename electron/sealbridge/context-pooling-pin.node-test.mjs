@@ -8,10 +8,10 @@ const json = file => JSON.parse(read(file));
 
 test("Bundled core archives, runtime lock and preparation share the reviewed pin", () => {
   const pin = json("vendor/sealbridge/provenance.json");
-  assert.equal(pin.commit, "3b20ca1eb9d5f5dd950cb7ac6c21a82abe4dbc15");
+  assert.equal(pin.commit, "1e6f7a4fe8f6cce0aab7973eac8e85cda0723516");
   assert.equal(pin.version, "0.6.3");
-  assert.equal(pin.sourceSha256, "87b05f7bc49bbcaf2b4cb0229669b3a14e9e808e30867587c6e4bedae215ac17");
-  assert.equal(pin.packageSha256, "818710806506292c83a615702279d31616c1f5da430bdbbd39afe2902b9d382c");
+  assert.equal(pin.sourceSha256, "e3ea5da9c1a861725dd8bd39798bef42057659f4409189b4504900944d381a74");
+  assert.equal(pin.packageSha256, "5a0b273d031756ee914c54fa850dcd32eb162109fd6a8823260bd217586aad39");
   for (const [name, hash] of [["source.tar.gz", pin.sourceSha256], ["sealbridge-0.6.3.tgz", pin.packageSha256]])
     assert.equal(createHash("sha256").update(read(`vendor/sealbridge/${name}`)).digest("hex"), hash);
   const file = "file:../../vendor/sealbridge/sealbridge-0.6.3.tgz";
