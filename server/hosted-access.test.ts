@@ -122,7 +122,7 @@ it.each<NodeJS.ProcessEnv>([
   const keys = Object.keys(settings);
   const notice = `${keys.join(", ")} ${keys.length === 1 ? "has" : "have"} no effect in this distribution.`;
   expect(status).toEqual({ edition: "oss", features: [], notice });
-  expect(readFileSync(server.logPath, "utf8")).toContain(`openmausbot open-source edition (${notice})`);
+  expect(readFileSync(server.logPath, "utf8")).toContain(`Sealbridge Desktop open-source edition (${notice})`);
   expect(JSON.stringify(status)).not.toContain("fixture-private-value");
   expect(existsSync(server.marker)).toBe(false);
   const member = await server.request("/api/edition", { headers: { authorization: `Bearer ${server.localToken}` } });
