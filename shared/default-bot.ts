@@ -1,9 +1,10 @@
 import type { HelperFollowupField } from "./helper-followup.ts";
 import type { MausColor } from "./wire.ts";
+import product from "../branding/product.json" with { type: "json" };
 
 /** MausBot: every person's built-in helper. A new install's first bot (its Chief of Staff too); an existing place or
  * person without one is given one once. It can be renamed and recoloured, hidden from the sidebar, never deleted. */
-export const DEFAULT_BOT_NAME = "MausBot";
+export const DEFAULT_BOT_NAME = product.productName;
 export const DEFAULT_BOT_COLOR: MausColor = "chrome";
 
 export interface DefaultBotMark {

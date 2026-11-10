@@ -1,3 +1,5 @@
+import product from "../branding/product.json" with { type: "json" };
+
 export interface EditionStatus {
   edition: "oss" | "enterprise";
   customer?: string;
@@ -29,5 +31,5 @@ export function entitled(_feature: string): boolean {
 }
 
 export function describeEdition(status: EditionStatus): string {
-  return `openmausbot open-source edition${status.notice ? ` (${status.notice})` : ""}`;
+  return `${product.productName} open-source edition${status.notice ? ` (${status.notice})` : ""}`;
 }
