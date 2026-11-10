@@ -31,6 +31,31 @@ function rig() {
 }
 
 describe("TurnWatchdog", () => {
+  it("uses the admitted direct turn's configured limit even through teardown", () => {
+    const { dog, stalls, limits, tick } = rig();
+    dog.watch("t1", "bot1", 300_000);
+    tick(100_000);
+    dog.eventsDiscarded("t1");
+    tick(299_999);
+    dog.sweep();
+    expect(stalls).toHaveLength(0);
+    tick(1);
+    dog.sweep();
+    expect(limits).toEqual([300_000]);
+  });
+
+  it("does not let provider notices, retries or session events keep an idle turn alive", () => {
+    const { dog, stalls, tick } = rig();
+    dog.watch("t1", "bot1", 300_000);
+    for (let minute = 0; minute < 5; minute += 1) {
+      tick(60_000);
+      dog.observe({ ...base, type: "runtime.notice", message: "Request still open" });
+      dog.observe({ ...base, type: "session.started", sessionId: "s" });
+    }
+    dog.sweep();
+    expect(stalls).toHaveLength(1);
+  });
+
   it("stalls a silent turn once, and only once", () => {
     const { dog, stalls, tick } = rig();
     dog.watch("t1", "bot1");

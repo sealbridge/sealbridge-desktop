@@ -16,7 +16,7 @@ import { OWN_APPS_SERVER } from "../../../shared/own-apps.ts";
 import { MAX_QUESTIONS, parseProtocolAskQuestions, pickedOptionLabels, questionAnswersById, repeatsQuestionText } from "../../../shared/ask-question.ts";
 
 export const STATIC_GROK_MODELS: ModelCatalog = {
-  default: "grok-4.7",
+  default: "grok-4.5",
   options: [
     { id: "grok-4.7", label: "Grok 4.7", contextWindow: 500_000 },
     { id: "grok-4.6", label: "Grok 4.6" },

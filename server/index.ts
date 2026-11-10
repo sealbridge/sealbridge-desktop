@@ -5064,7 +5064,7 @@ function stoppedTurnText(threadId: string, turnId: string | undefined, cause?: s
 }
 const watchdog = new TurnWatchdog({
   stallMs: TURN_STALL_MS, toolStallMs: TOOL_STALL_MS,
-  checkMs: 60_000,
+  checkMs: 1_000,
   onStall: (turn, silentMs) => {
     const stalledResourceOwner = turnResourceOwners.get(turn.threadId);
     const stalledGeneration = directTurnGenerationByThread.get(turn.threadId);
@@ -7903,7 +7903,7 @@ async function startTurn(
   }
   store.setTaskActivity(bot.id, threadId, "working");
   // Watch from admission, not dispatch: a turn can wedge in setup long before any provider event exists.
-  watchdog.watch(threadId, bot.id);
+  watchdog.watch(threadId, bot.id, stallLimitMs(process.env.OMB_TURN_STALL_MS, roomTurnTimeoutMinutes(cfg) * 60_000));
   store.setTaskClosedBy(bot.id, threadId, null);
   // Only a person's turn clears unread: the fold never re-marks an internal turn.
   if (commsDepth === 0) store.patchTask(bot.id, threadId, { unread: false });

@@ -22,6 +22,7 @@ function scratchConfig(toml: string): string {
 describe("readGrokModelCatalog", () => {
   it("returns the static cloud models when there is no config", () => {
     expect(readGrokModelCatalog({ HOME: join(tmpdir(), "omb-grok-missing-home") })).toEqual(STATIC_GROK_MODELS);
+    expect(STATIC_GROK_MODELS.default).toBe("grok-4.5");
   });
 
   it("appends local slugs from config.toml and prefers their display names", () => {
@@ -65,7 +66,7 @@ name = "nope"
 name = "OK"
 `);
     const catalog = readGrokModelCatalog({ HOME: home });
-    expect(catalog.default).toBe("grok-4.7");
+    expect(catalog.default).toBe("grok-4.5");
     expect(catalog.options.map((o) => o.id)).toEqual(["grok-4.7", "grok-4.6", "grok-4.5", "ok-model"]);
   });
 
@@ -89,7 +90,7 @@ default = "grok-4.5"
 [model.ok-model]
 name = "OK"
 `);
-    expect(readGrokModelCatalog({ HOME: home }).default).toBe("grok-4.7");
+    expect(readGrokModelCatalog({ HOME: home }).default).toBe("grok-4.5");
   });
 });
 
