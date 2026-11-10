@@ -146,6 +146,6 @@ export function ContextReceivePanel() {
     {status.redelegation && <RedelegationForm key={status.redelegation.id} request={status.redelegation} />}
     {status.approvals?.map(card => <RedelegationCard key={card.id} card={card} />)}
     {status.compose.map(item => <Reply key={item.id} {...item} sent={() => setStatus(value => ({ ...value, compose: value.compose.filter(row => row.id !== item.id) }))} />)}
-    {status.rejected.map((item, index) => <p key={index} role="status">依頼は断られました: {item.code}</p>)}
+    {status.rejected.map((item, index) => <p key={index} role="status">{item.code === "TASK_INTERRUPTED" ? "依頼は中断しました" : "依頼は断られました"}: {item.code}</p>)}
   </section>;
 }

@@ -1,7 +1,7 @@
 # Bundled core
 
 Upstream source: https://github.com/sealbridge/sealbridge, commit
-`d2a28ff754f124df20cbf26bf26fa8e14cec4878` (upstream version `0.6.2`).
+`3b20ca1eb9d5f5dd950cb7ac6c21a82abe4dbc15` (upstream version `0.6.3`).
 The desktop installs this archived commit, including interrupted outbox recovery, default AuditInterruption sealing,
 AES-256-GCM documentation and C-W4 quarantine deadlines,
 never a registry package with the same version. When the parent is Electron, the rule inspector child receives the constant `ELECTRON_RUN_AS_NODE=1`.
@@ -23,6 +23,10 @@ npm's `--cpu` selection. Electron Builder copies the matching tree into
 `Resources/sealbridge-runtime`, outside ASAR. The child uses Electron's Node via
 `ELECTRON_RUN_AS_NODE=1`; it does not invoke a user's Node, npm, npx or global CLI.
 The host-architecture tree is also staged for development and fixture tests.
+
+The receive adapter projects core `INTERRUPTED` events as `TASK_INTERRUPTED` in its
+existing terminal-status channel; the panel labels them as interruptions rather than rejections.
+Diagnostic phases and raw error details are not forwarded to the renderer.
 
 The adapter calls core `selectKeyStore`, `setApplicationKeyStore` and
 `resolveStoredIdentity` to bootstrap the requester identity. The core's
