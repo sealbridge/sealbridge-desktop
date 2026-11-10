@@ -8,6 +8,10 @@ external MCP clients and scripts.
 
 ## Launch
 
+The canonical HTTP reachability check is `GET /api/health` on the fixture's
+printed URL. `/` is not a dev UI route; `/api/me` is Team Cloud only and returns
+404 locally. See [first-run scope and browser setup](../sealbridge/first-run.md).
+
 Start a fixture in one terminal:
 
 ```sh

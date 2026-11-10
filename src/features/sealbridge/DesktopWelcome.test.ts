@@ -16,6 +16,10 @@ it("finishes without any workplace or model and only after the completion saves"
   const host = document.createElement("div"), root = createRoot(host), done = vi.fn();
   try {
     flushSync(() => root.render(createElement(DesktopWelcome, { onDone: done })));
+    expect(host.querySelector("h1")?.textContent).toBe("Sealbridge Desktop");
+    expect(host.textContent).toContain("公開アドレス");
+    expect(host.textContent).toContain("アプリ内のチャットを開きます");
+    expect(host.textContent).toContain("ホストされた作業環境への登録ではありません");
     expect(host.textContent).toContain("あなたのエージェントの届け先を準備します。");
     flushSync(() => host.querySelector("button")!.click());
     expect(host.textContent).toContain("did:key:fixture");
