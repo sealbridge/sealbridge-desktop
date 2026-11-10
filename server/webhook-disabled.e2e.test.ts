@@ -9,7 +9,8 @@ it("leaves the webhook port closed and reports disabled ingress while the API st
     expect((await fetch(url + "/api/health")).status).toBe(200);
     const response = await fetch(url + "/api/webhooks");
     expect(response.status).toBe(200);
-    expect((await response.json()).ingress).toMatchObject({ available: false, error: "Webhook receiver disabled by OMB_WEBHOOK_ENABLED=0" });
+    const body = await response.json() as { ingress: unknown };
+    expect(body.ingress).toMatchObject({ available: false, error: "Webhook receiver disabled by OMB_WEBHOOK_ENABLED=0" });
     const status = await new Promise<string>((resolve, reject) => {
       const socket = connect({ host: "127.0.0.1", port: Number(new URL(url).port) + 1 });
       socket.once("connect", () => { socket.destroy(); resolve("open"); });
