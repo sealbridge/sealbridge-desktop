@@ -26,6 +26,8 @@ the harness server itself is portable Node and the test suite runs on macOS, Lin
 git clone https://github.com/milind-soni/OpenMausBot && cd OpenMausBot
 pnpm install
 
+pnpm hooks:install # optional: install this repository's pre-push checks
+
 pnpm dev:server    # harness server → 127.0.0.1:8799
 pnpm dev           # app → http://127.0.0.1:5199
 pnpm dev:desktop   # Electron shell (macOS/Ubuntu; keep server + Vite running)

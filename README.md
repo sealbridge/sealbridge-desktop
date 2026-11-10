@@ -31,6 +31,12 @@ From a local checkout of this repository, install dependencies:
 pnpm install
 ```
 
+Installation does not install git hooks. Contributors may opt in with
+`pnpm hooks:install`. Only Electron and esbuild dependency build scripts are
+approved. The optional core-js notice and workerd postinstall are deliberately
+skipped; do not run `pnpm approve-builds` just to try the desktop app. Workerd
+is used by the separate Cloudflare worker tests, not local chat.
+
 Run each command below in a separate terminal from the repository root. Keep the
 server and web UI running while using the Electron shell:
 
@@ -49,6 +55,10 @@ Build the production web UI and typecheck the app and server:
 ```sh
 pnpm build
 ```
+
+TypeScript runs with a 4 GiB heap budget (the default Node heap can be too small
+for this repository). Allow roughly 8 GB total RAM with other applications
+closed; the heap budget is not a reservation or a total-process memory limit.
 
 To build a desktop package, use the script for your platform:
 
