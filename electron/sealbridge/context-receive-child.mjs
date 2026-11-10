@@ -1,6 +1,6 @@
 import path from "node:path";
 import { realpathSync } from "node:fs";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline";
 import { resolveCoreContext } from "./bootstrap.mjs";
 import { createContextReceiver, requireReceiveAudit } from "./context-receive-core.mjs";
@@ -29,9 +29,8 @@ export async function runReceiveChild({ input = process.stdin, output = process.
       if (started) return;
       started = true;
       requireReceiveAudit(dataDir, message.auditPath);
-      const sdk = await import(pathToFileURL(path.join(packageDir, "dist/cli/dist/sdk.js")).href);
-      const { signApproval } = await import(pathToFileURL(path.join(packageDir, "dist/packages/core/dist/index.js")).href);
-      const { owner, identityOptions } = await resolveCoreContext({ packageDir, dataDir, keyringLoader });
+      const { owner, identityOptions, sdk } = await resolveCoreContext({ packageDir, dataDir, keyringLoader });
+      const { signApproval } = sdk;
       if (stopped) return;
       const relays = sdk.readApplicationConfig(identityOptions).relays;
       const trust = new sdk.WorkerTrustStore(owner, { path: sdk.workerIntakePath(owner.did, identityOptions) });

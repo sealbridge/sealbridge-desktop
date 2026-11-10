@@ -1,7 +1,7 @@
 import path from "node:path";
 import { contextGrantSummary } from "./context-grant-summary.mjs";
 export { contextGrantSummary, receivedContextSummary } from "./context-grant-summary.mjs";
-import { pathToFileURL } from "node:url";
+import { loadCoreSdk } from "./sdk.mjs";
 import { readFileSync } from "node:fs";
 import { developmentRuntimeDir, resolveRuntime } from "./runtime.mjs";
 
@@ -21,7 +21,7 @@ export function validContextDraft(value) {
 
 export async function loadContextSdk(runtimeDir = developmentRuntimeDir) {
   resolveRuntime({ runtimeDir });
-  return import(pathToFileURL(path.join(runtimeDir, "node_modules/sealbridge/dist/cli/dist/sdk.js")).href);
+  return loadCoreSdk(path.join(runtimeDir, "node_modules/sealbridge"));
 }
 
 export function createContextPreparation({ loadSdk = loadContextSdk, now = Date.now } = {}) {

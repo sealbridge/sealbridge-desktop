@@ -10,9 +10,10 @@ import { buildNarrowedManifest, createContextReceiver } from "./context-receive-
 import { executeContextSend } from "./context-send-core.mjs";
 import { shortDid } from "./context-send-approval.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
+import { loadCoreSdk } from "./sdk.mjs";
 
 const load = name => import(pathToFileURL(path.join(developmentRuntimeDir, "node_modules/sealbridge/dist", name)).href);
-const sdk = await load("cli/dist/sdk.js");
+const sdk = await loadCoreSdk(path.join(developmentRuntimeDir, "node_modules/sealbridge"));
 const core = await load("packages/core/dist/index.js");
 const relayApi = await load("packages/relay/dist/index.js");
 const marker = "DW4_PARENT_" + "TRANSIENT_MARKER";
@@ -60,7 +61,7 @@ async function parties(t) {
   connect(storeC, keys.b, relay.url);
   const events = { b: [], c: [] }, cards = [], sendEvents = [];
   const controller = new AbortController();
-  const receiver = name => createContextReceiver({ sdk, owner: keys[name], signApproval: core.signApproval,
+  const receiver = name => createContextReceiver({ sdk, owner: keys[name], signApproval: sdk.signApproval,
     identityOptions: identity(name), dataDir: dirs[name], auditPath: path.join(dirs[name], "context-audits", "receive.jsonl"),
     relay: relay.url, send: event => events[name].push(event), workerOptions: { allowPrivateRelay: true } });
   const b = receiver("b"), c = receiver("c");
@@ -74,7 +75,7 @@ async function parties(t) {
     await rm(root, { recursive: true, force: true });
   });
   const send = () => {
-    const result = executeContextSend({ sdk, owner: keys.a, signApproval: core.signApproval,
+    const result = executeContextSend({ sdk, owner: keys.a, signApproval: sdk.signApproval,
       draft: { selectors: ["one", "two"], fieldsAllowed: ["x", "y"], fieldsDenied: ["private"], angle: "可否",
         body: parentBody, deliveryMode: "approval_redelegation", lifetimeHours: 24 },
       signal: controller.signal, target: { peerOwnerDid: keys.b.did, relayUrl: relay.url },

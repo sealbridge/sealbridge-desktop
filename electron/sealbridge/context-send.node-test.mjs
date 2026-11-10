@@ -12,11 +12,12 @@ import { createSendApproval } from "./context-send-approval.mjs";
 import { createContextSender, launchContextSend } from "./context-send.mjs";
 import { executeContextSend } from "./context-send-core.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
+import { loadCoreSdk } from "./sdk.mjs";
 import { sanitizedEnvironment } from "./mcp-host.mjs";
 
 const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge");
 const load = name => import(pathToFileURL(path.join(packageDir, "dist", name)).href);
-const sdk = await load("cli/dist/sdk.js");
+const sdk = await loadCoreSdk(packageDir);
 const core = await load("packages/core/dist/index.js");
 const relayApi = await load("packages/relay/dist/index.js");
 const draft = { selectors: ["$.items"], fieldsAllowed: ["size"], fieldsDenied: ["customer"], angle: "可否だけ",
@@ -107,7 +108,7 @@ test("human approval binds the displayed digest to the request immediately befor
     const request = { taskId: manifest.taskId, gate: "contract_acceptance", target: manifest,
       details: { manifest, bytes: Buffer.byteLength(JSON.stringify(draft.body)) }, signal: signal.signal };
     let shown;
-    const provider = createSendApproval({ sdk, owner, signApproval: core.signApproval, ask: async card => {
+    const provider = createSendApproval({ sdk, owner, signApproval: sdk.signApproval, ask: async card => {
       shown = structuredClone(card);
       assert.equal(card.digest, sdk.contextGrantAuditPayload(request.details.manifest.contextGrant).grantDigest);
       if (mutation === "request") manifest.contextGrant.angle = "different";
@@ -190,7 +191,7 @@ for (const mode of ["view_only", "hand_over"]) test(`local relay and bundled CLI
   t.after(async () => { if (!exited) worker.kill(); await closed; await relay.close(); await rm(dir, { recursive: true, force: true }); });
   await Promise.race([ready, new Promise((_, reject) => { const timer = setTimeout(() => reject(new Error("CLI_READY_TIMEOUT")), 10000); timer.unref(); })]);
   const cards = [], events = [];
-  const result = await executeContextSend({ sdk, owner, signApproval: core.signApproval, draft: { ...draft, deliveryMode: mode },
+  const result = await executeContextSend({ sdk, owner, signApproval: sdk.signApproval, draft: { ...draft, deliveryMode: mode },
     target: { peerOwnerDid: workerOwner.did, relayUrl: relay.url }, auditPath: path.join(dir, "sender.jsonl"),
     identityOptions: { env: { SEALBRIDGE_DATA_DIR: dir } }, clientOptions: { allowPrivateRelay: true, timeoutMs: 20000, protocolPeers: { floor: () => "0.2.0", observePolicy: policy => policy, observe: () => {} } },
     ask: async card => { cards.push(card); return true; }, send: event => events.push(event) });

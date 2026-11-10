@@ -45,7 +45,7 @@ for (const arch of architectures) {
   const target = path.resolve(`build/sealbridge-runtime-${arch}`);
   await rm(target, { recursive: true, force: true });
   await cp(installDir, target, { recursive: true });
-  for (const name of ["context-receive-core.mjs", "context-receive-child.mjs", "context-grant-summary.mjs", "context-send-core.mjs", "context-send-child.mjs", "context-send-approval.mjs", "bootstrap.mjs", "core-child.mjs", "invite-child.mjs", "core-invites.mjs", "invite-public.mjs", "redaction.mjs", "invite-secrets.mjs", "invite-errors.mjs"]) {
+  for (const name of ["sdk.mjs", "context-receive-core.mjs", "context-receive-child.mjs", "context-grant-summary.mjs", "context-send-core.mjs", "context-send-child.mjs", "context-send-approval.mjs", "bootstrap.mjs", "core-child.mjs", "invite-child.mjs", "core-invites.mjs", "invite-public.mjs", "redaction.mjs", "invite-secrets.mjs", "invite-errors.mjs"]) {
     await cp(new URL(`../electron/sealbridge/${name}`, import.meta.url), path.join(target, name));
   }
   await cp(new URL("../vendor/sealbridge/provenance.json", import.meta.url), path.join(target, "provenance.json"));
