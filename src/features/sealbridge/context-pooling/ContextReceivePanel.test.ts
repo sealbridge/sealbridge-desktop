@@ -7,6 +7,18 @@ import { readFileSync } from "node:fs";
 import { ContextReceivePanel } from "./ContextReceivePanel";
 import type { ContextReceiveStatus } from "../../../../shared/sealbridge";
 
+it("labels interrupted requests separately from owner rejections", async () => {
+  const previous = window.ogb;
+  Object.assign(window, { ogb: { sealbridge: { receiveStatus: async () => ({ state: "ready", rows: [], compose: [],
+    rejected: [{ taskId: "interrupted", code: "TASK_INTERRUPTED" }, { taskId: "denied", code: "OWNER_DENIED" }] }) } } });
+  const host = document.createElement("div"), root = createRoot(host);
+  try {
+    flushSync(() => root.render(createElement(ContextReceivePanel)));
+    await vi.waitFor(() => expect(host.textContent).toContain("依頼は中断しました: TASK_INTERRUPTED"));
+    expect(host.textContent).toContain("依頼は断られました: OWNER_DENIED");
+  } finally { flushSync(() => root.unmount()); Object.assign(window, { ogb: previous }); }
+});
+
 it("renders literal preview, refuses Enter opening and requires answer confirmation without persistence", async () => {
   const previous = window.ogb;
   const receiveAction = vi.fn().mockResolvedValue({ ok: true }), receiveReply = vi.fn().mockResolvedValue({ ok: true });

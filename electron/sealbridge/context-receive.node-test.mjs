@@ -211,6 +211,25 @@ test("sender distinguishes pending from timeouts", () => {
   assert.equal(contextSendFailureState(new Error("OWNER_DENIED")), "failed");
 });
 
+test("receiver projects interrupted handshakes without forwarding diagnostics", async t => {
+  const dir = await mkdtemp(path.join(tmpdir(), "receive-interrupted-"));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  let onEvent;
+  const events = [];
+  createContextReceiver({ sdk: { ...sdk, WorkerNode: class {
+    constructor(options) { onEvent = options.onEvent; }
+  } }, owner: sdk.generateKeyPair(), signApproval: core.signApproval,
+  identityOptions: { env: { SEALBRIDGE_DATA_DIR: dir } }, dataDir: dir,
+  auditPath: path.join(dir, "context-audits", "receive.jsonl"), relay: "ws://127.0.0.1:1",
+  enableRedelegation: false, send: event => events.push(event) });
+  for (const phase of ["OWNER_APPROVAL", "ACCEPT_ACK_WAIT"]) {
+    onEvent("INTERRUPTED", "task", { code: "TASK_INTERRUPTED", phase, detail: "private diagnostic" });
+    assert.deepEqual(events.pop(), { type: "rejected", taskId: "task", code: "TASK_INTERRUPTED" });
+  }
+  onEvent("REJECTED", "task", { code: "OWNER_DENIED" });
+  assert.deepEqual(events.pop(), { type: "rejected", taskId: "task", code: "OWNER_DENIED" });
+});
+
 test("main retains projections and correlates live decisions through local-only IPC", async t => {
   const dir = await mkdtemp(path.join(tmpdir(), "dw2-main-"));
   t.after(() => rm(dir, { recursive: true, force: true }));

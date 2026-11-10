@@ -8,7 +8,7 @@
   "urlScheme": "sealbridge",
   "dataDirName": "sealbridge-desktop",
   "cliPackage": "sealbridge",
-  "cliVersion": "0.6.2",
+  "cliVersion": "0.6.3",
   "defaultRelay": "https://relay.sealbridge.dev",
   "updateChannel": "disabled"
 }

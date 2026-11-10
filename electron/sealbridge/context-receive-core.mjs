@@ -196,6 +196,7 @@ export function createContextReceiver({ sdk, owner, signApproval, identityOption
     ...(childRequester ? { redelegation: { requester: childRequester, ownerApprovalProvider } } : {}),
     onWorkspaceCleanupError: () => send({ type: "notice", code: "WORKSPACE_CLEANUP_FAILED" }),
     onEvent: (event, taskId, error) => {
+      if (event === "INTERRUPTED") send({ type: "rejected", taskId, code: "TASK_INTERRUPTED" });
       if (event === "REJECTED") send({ type: "rejected", taskId, code: /^[A-Z_0-9]+$/.test(error?.code ?? "") ? error.code : "REQUEST_REJECTED" });
     } });
   return {
