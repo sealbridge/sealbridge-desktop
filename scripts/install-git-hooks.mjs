@@ -1,7 +1,3 @@
-// Point git at the repo's hooks (scripts/git-hooks) once, on `pnpm install`.
-// Never fails the install: no git, no repo (an npm tarball, a Docker build),
-// CI, or a read-only checkout all mean "nothing to do", and a hook that
-// cannot be installed must not block installing the app.
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";

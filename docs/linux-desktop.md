@@ -283,3 +283,16 @@ file OpenMausBot-*-x86_64.AppImage
 
 Run it from a terminal once to collect the startup output. Do not install `libfuse2` just for this AppImage; the
 package is built with the static runtime.
+# Running a source checkout as root
+
+Run `pnpm dev:desktop` as a regular user to keep Chromium's sandbox enabled.
+Electron refuses to start as root with the sandbox; the development script
+prints this requirement before downloading runtime assets.
+For a disposable, isolated container evaluation only, explicitly opt out:
+
+```sh
+ELECTRON_DISABLE_SANDBOX=1 pnpm dev:desktop
+```
+
+This disables Chromium's sandbox. It is not required for normal desktop use.
+

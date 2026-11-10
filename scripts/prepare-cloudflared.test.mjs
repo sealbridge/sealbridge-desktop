@@ -166,7 +166,7 @@ describe("pinned cloudflared packaging", () => {
 
   it("stages the current target for development without narrowing package preparation", () => {
     expect(packageJson.scripts["dev:desktop"]).toBe(
-      "node scripts/prepare-sealbridge-runtime.mjs && node scripts/prepare-cloudflared.mjs --current && electron .",
+      "node scripts/check-desktop-user.mjs && node scripts/prepare-sealbridge-runtime.mjs && node scripts/prepare-cloudflared.mjs --current && electron .",
     );
     expect(packageJson.scripts["build:cloudflared"]).toBe(
       "node scripts/prepare-cloudflared.mjs",
