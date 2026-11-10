@@ -12,7 +12,7 @@ import { readHandoffs } from "./testing/handoff-rows.ts";
 import { hostTimeout } from "./testing/host-timeout.ts";
 import { openSse, type SseRecorder } from "./testing/sse.ts";
 
-const STALLED = "No activity for 20 minutes — the routine was stopped";
+const STALLED = "No activity for 5 minutes — the routine was stopped";
 const SIGN_IN = "This bot's AI is signed out. Sign in again in Settings → AI.";
 const ROUTINE_HEADER = '[Routine "Inbox brief" — do this now:]';
 

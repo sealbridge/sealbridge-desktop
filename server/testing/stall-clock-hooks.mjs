@@ -14,8 +14,7 @@ registerHooks({
     const result = nextLoad(url, context);
     if (url !== server) return result;
     const source = String(result.source);
-    // The watchdog is the server's only interval with this period.
-    const anchor = 'checkMs: 60_000,';
+    const anchor = 'checkMs: 1_000,';
     if (source.split(anchor).length !== 2) throw new Error('Stall watchdog clock seam changed');
     return { ...result, source: `import { existsSync as stallMarkerExists } from 'node:fs';\n` + source.replace(anchor,
       `checkMs: 50, now: () => Date.now() + (stallMarkerExists(${JSON.stringify(marker)}) ? TURN_STALL_MS : 0),`) };

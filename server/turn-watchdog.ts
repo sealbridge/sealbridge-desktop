@@ -1,4 +1,5 @@
 import type { RuntimeEvent } from "./contracts.ts";
+import { ROOM_TURN_PROGRESS } from "./room-turn-timeout.ts";
 
 // A turn whose thread emits nothing for stallMs is wedged; waiting on a person or a computer is not a stall.
 // Drivers report a tool only when it starts and when it ends, so a turn with a tool running may stay silent for toolStallMs.
@@ -10,6 +11,7 @@ export interface WatchedTurn {
   waitingOnHuman: boolean;
   waitingOnComputer: boolean;
   runningTools: Set<string>;
+  stallMs?: number;
 }
 
 // Number() also reads "Infinity" and "1e309" as numbers, and an endless limit would switch the watchdog off.
@@ -55,16 +57,16 @@ export class TurnWatchdog {
     this.turns.clear();
   }
 
-  watch(threadId: string, botId: string): void {
+  watch(threadId: string, botId: string, stallMs = this.opts.stallMs): void {
     const at = this.now();
     this.turns.set(threadId, { threadId, botId, startedAt: at, lastEventAt: at, waitingOnHuman: false, waitingOnComputer: false,
-      runningTools: new Set() });
+      runningTools: new Set(), stallMs });
   }
 
   observe(event: RuntimeEvent): void {
     const turn = this.turns.get(event.threadId);
     if (!turn) return;
-    turn.lastEventAt = this.now();
+    if (ROOM_TURN_PROGRESS.has(event.type)) turn.lastEventAt = this.now();
     if ((event.type !== "item.started" && event.type !== "item.completed") || event.itemType !== "tool" || !event.itemId) return;
     if (event.type === "item.completed") turn.runningTools.delete(event.itemId);
     else turn.runningTools.add(event.itemId);
@@ -91,7 +93,7 @@ export class TurnWatchdog {
   /** A Stop that discards the turn's later events leaves no way for a tool or a wait to report its end: watch the teardown as a fresh silent turn. */
   eventsDiscarded(threadId: string): void {
     const turn = this.turns.get(threadId);
-    if (turn) this.watch(threadId, turn.botId);
+    if (turn) this.watch(threadId, turn.botId, turn.stallMs);
   }
 
   watching(threadId: string): boolean {
@@ -114,7 +116,8 @@ export class TurnWatchdog {
     const at = this.now();
     for (const turn of this.turns.values()) {
       if (parked(turn)) continue;
-      const silentMs = turn.runningTools.size > 0 ? Math.max(this.opts.stallMs, this.opts.toolStallMs) : this.opts.stallMs;
+      const limitMs = turn.stallMs ?? this.opts.stallMs;
+      const silentMs = turn.runningTools.size > 0 ? Math.max(limitMs, this.opts.toolStallMs) : limitMs;
       if (at - turn.lastEventAt < silentMs) continue;
       this.turns.delete(turn.threadId);
       this.opts.onStall(turn, silentMs);
