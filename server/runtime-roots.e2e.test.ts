@@ -754,7 +754,7 @@ const stallOverCards = async (f: StallFixture, job: string, ids: string[]) => {
   expect(f.roots()[0]).toMatchObject({ status: "failed", outcome: "stalled", executions: 1 });
   expect(f.roots()[0]!.cards).toBeUndefined();
   expect((await f.messages(job)).filter((message) => message.kind === "activity" && message.tool?.name.startsWith("error:")).map((message) => message.tool!.name))
-    .toEqual(["error: no activity for 20 minutes — the turn was stopped"]);
+    .toEqual(["error: no activity for 5 minutes — the turn was stopped"]);
   const cards = (await f.messages(job)).filter((message) => ids.includes(message.id));
   expect(cards.map((message) => (message.secret ?? message.connector ?? message.signIn)?.stopped)).toEqual(ids.map(() => true));
 };
