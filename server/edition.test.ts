@@ -17,7 +17,7 @@ describe("open-source edition", () => {
     expect(status).toEqual({ edition: "oss", features: [] });
     expect(edition.editionForMembers(status)).toEqual(status);
     expect(edition.editionForSettings(status)).toEqual(status);
-    expect(edition.describeEdition(status)).toBe("openmausbot open-source edition");
+    expect(edition.describeEdition(status)).toBe("Sealbridge Desktop open-source edition");
   });
   it.each(["OMB_LICENSE_KEY", "OMB_ENTERPRISE_DIR"])("continues as OSS with an operator notice for %s, including an empty value", key => {
     for (const value of ["", "fixture-private-value"]) {
@@ -25,7 +25,7 @@ describe("open-source edition", () => {
       const status = edition.editionStatus();
       expect(status).toEqual({ edition: "oss", features: [], notice: `${key} has no effect in this distribution.` });
       expect(JSON.stringify(status)).not.toContain("fixture-private-value");
-      expect(edition.describeEdition(status)).toBe(`openmausbot open-source edition (${status.notice})`);
+      expect(edition.describeEdition(status)).toBe(`Sealbridge Desktop open-source edition (${status.notice})`);
       expect(edition.editionForMembers(status)).toEqual({ edition: "oss", features: [] });
       expect(edition.editionForSettings(status)).toEqual({ edition: "oss", features: [] });
     }
