@@ -166,8 +166,9 @@ export function advertisedWebhookBase(raw: string): string {
 
 export async function listenWebhookIngress(
   manager: WebhookManager,
-  options: { host?: string; port: number; publicBaseUrl?: string; claimRequest?: () => () => void },
+  options: { enabled?: boolean; host?: string; port: number; publicBaseUrl?: string; claimRequest?: () => () => void },
 ): Promise<WebhookIngress> {
+  if (options.enabled === false) throw new Error("Webhook receiver disabled by OMB_WEBHOOK_ENABLED=0");
   const host = options.host ?? "127.0.0.1";
   const advertised = options.publicBaseUrl === undefined ? undefined : advertisedWebhookBase(options.publicBaseUrl);
   const handle = createWebhookIngressHandler(manager, options.claimRequest);

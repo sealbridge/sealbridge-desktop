@@ -153,6 +153,7 @@ export function verificationServerEnvironment(parentEnv: NodeJS.ProcessEnv, data
     OMB_DATA_DIR: dataDir,
     OMB_PORT: String(port),
     OMB_WEBHOOK_PORT: String(port + 1),
+    ...(parentEnv.OMB_WEBHOOK_ENABLED === "0" ? { OMB_WEBHOOK_ENABLED: "0" } : {}),
     // A caller's FAKE_CLAUDE_MODE overrides this below to drive failure paths.
     FAKE_CLAUDE_MODE: parentEnv.FAKE_CLAUDE_MODE || "happy",
     FAKE_CLAUDE_DUMP: join(dataDir, "fake-claude-dump.json"),
