@@ -1,8 +1,11 @@
 # Display identity scope
 
-New built-in helpers use the product name from `branding/product.json`:
-**Sealbridge Desktop**. The introduction interpolates that helper's actual
-name. Existing helpers, personal names, histories and saved profiles are kept;
+New built-in helpers are named **Sealbridge**, from `DEFAULT_BOT_NAME` in
+`shared/default-bot.ts`. Their introduction says "Hey! I'm Sealbridge…".
+The app, window and product name remain **Sealbridge Desktop**, from
+`branding/product.json`. The helper name is independent of the product name.
+The introduction interpolates that helper's actual name.
+Existing helpers, personal names, histories and saved profiles are kept;
 an upstream helper still named MausBot is recognized during adoption and is
 not duplicated. No migration rewrites conversation text.
 
@@ -18,8 +21,6 @@ contracts. LICENSE and NOTICE remain unchanged. The vocabulary test's
 help and service names require a separate product copy decision; counts of
 names in a bundled dependency or translation are not a migration specification.
 
-Options for a later decision are to keep the built-in helper named after the
-product, give it a distinct approved assistant name, or retain the upstream
-assistant identity with an explicit in-app fork disclosure. This change chooses
-only the existing product name for newly created helpers. It does not rename
-anyone's existing helper or service subscription.
+The approved name **Sealbridge** applies only to newly created helpers. An
+existing helper named Sealbridge Desktop or a name chosen by its person keeps
+that name and its history. This change does not rename a service subscription.
