@@ -10,9 +10,12 @@ license. Fork changes are recorded in [MODIFICATIONS.md](MODIFICATIONS.md).
 
 **Early development. There are no Sealbridge Desktop releases yet. Build from source to try it.**
 
-The current app retains the upstream Electron chat interface and local agent
-harness. Sealbridge integration modules are present but are not yet connected to
-the desktop UI; delegation through Sealbridge is not yet available in the app.
+The app retains the upstream Electron chat interface and local agent harness.
+Sealbridge is connected through Electron's local IPC bridge: device identity,
+clipboard invite import, review cards, and the limited manual request flow are
+available. This does not provide automatic agent delegation or a complete peer
+directory. See [first-run and local services](docs/sealbridge/first-run.md) for
+the chat entrance, browser setup, ports and health checks.
 Some interface text and visual assets still use upstream branding. See the
 [integration contracts and current limitations](docs/sealbridge/g0-contracts.md).
 

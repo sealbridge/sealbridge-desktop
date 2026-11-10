@@ -1,5 +1,8 @@
 # G0 contracts and startup verification
 
+This document records the G0 milestone. For the current desktop's later IPC
+integration, invite review and local chat entrance, see [first run](first-run.md).
+
 G0 adds isolated modules for product configuration, a supervised stdio MCP client,
 feature negotiation, a provisional main-process adapter, an identity-store contract,
 and a pinned CLI preparation experiment. It does not register IPC, launch from
