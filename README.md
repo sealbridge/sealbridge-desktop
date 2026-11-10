@@ -44,6 +44,12 @@ The server listens on `127.0.0.1:8799` and the web UI on `http://127.0.0.1:5199`
 by default. The desktop development script stages the pinned Cloudflare Tunnel
 connector for the current platform before starting Electron.
 
+The server also binds a loopback-only webhook receiver on **127.0.0.1:8800**
+(`OMB_PORT + 1`, or `OMB_WEBHOOK_PORT`). It accepts authenticated automation
+deliveries, independently of the chat API. To run without that listener, set
+`OMB_WEBHOOK_ENABLED=0` before starting the server. See
+[ports, webhook authentication and disabling](docs/sealbridge/local-ports.md).
+
 Build the production web UI and typecheck the app and server:
 
 ```sh
