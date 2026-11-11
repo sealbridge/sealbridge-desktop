@@ -44,6 +44,8 @@ asar: true
 extraResources:
   - from: build/sealbridge-runtime-${arch}
     to: sealbridge-runtime
+  - from: build/sealbridge-runtime-${arch}/node_modules
+    to: sealbridge-runtime/node_modules
   # Ship the app's own license terms in every desktop distribution.
   - from: LICENSE
     to: licenses/OpenMausBot-LICENSE.txt

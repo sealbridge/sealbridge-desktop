@@ -1,4 +1,5 @@
 import { product } from "../electron/sealbridge/product.mjs";
+import { resolveRuntime } from "../electron/sealbridge/runtime.mjs";
 import { chmod, lstat, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { LICENSE_FILES } from "./cua-linux-release.mjs";
@@ -117,6 +118,7 @@ export default async function afterPack(context) {
       ? path.join(context.appOutDir, `${product.productName}.app`, "Contents", "Resources")
       : path.join(context.appOutDir, "resources")
   );
+  if (context.packager) resolveRuntime({ resourcesPath: resources });
   await validateCloudflared(resources, context.electronPlatformName, Boolean(context.packager));
   const browserRoot = path.join(resources, "browser-engine");
   const hasBrowser = await lstat(browserRoot).then(() => true, (error) => {
