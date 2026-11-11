@@ -8,19 +8,22 @@ const json = file => JSON.parse(read(file));
 
 test("Bundled core archives, runtime lock and preparation share the reviewed pin", () => {
   const pin = json("vendor/sealbridge/provenance.json");
-  assert.equal(pin.commit, "1e6f7a4fe8f6cce0aab7973eac8e85cda0723516");
-  assert.equal(pin.version, "0.6.3");
-  assert.equal(pin.sourceSha256, "e3ea5da9c1a861725dd8bd39798bef42057659f4409189b4504900944d381a74");
-  assert.equal(pin.packageSha256, "5a0b273d031756ee914c54fa850dcd32eb162109fd6a8823260bd217586aad39");
-  for (const [name, hash] of [["source.tar.gz", pin.sourceSha256], ["sealbridge-0.6.3.tgz", pin.packageSha256]])
+  assert.equal(pin.commit, "77c6140c75e5fec89428727de00aca217a4cbb0c");
+  assert.equal(pin.version, "0.7.0");
+  assert.equal(pin.packageName, "sealbridge-local");
+  assert.equal(pin.npmProvenance, false);
+  assert.equal(pin.sourceSha256, "6dfe127515f0dbbf84ffd7ce27466aca9a29186d1e0429e26a903d7e405e79b8");
+  assert.equal(pin.packageSha256, "c4f5ce2a23551fe32d20c0dfd590159a648753c6182467167c56d5788aeaed0e");
+  for (const [name, hash] of [["source.tar.gz", pin.sourceSha256], ["sealbridge-local-0.7.0.tgz", pin.packageSha256]])
     assert.equal(createHash("sha256").update(read(`vendor/sealbridge/${name}`)).digest("hex"), hash);
-  const file = "file:../../vendor/sealbridge/sealbridge-0.6.3.tgz";
-  assert.equal(json("runtime/sealbridge/package.json").dependencies.sealbridge, file);
-  const lock = json("runtime/sealbridge/package-lock.json").packages["node_modules/sealbridge"];
+  const file = "file:../../vendor/sealbridge/sealbridge-local-0.7.0.tgz";
+  assert.equal(json("runtime/sealbridge/package.json").dependencies["sealbridge-local"], file);
+  const lock = json("runtime/sealbridge/package-lock.json").packages["node_modules/sealbridge-local"];
   assert.equal(lock.version, pin.version); assert.equal(lock.resolved, file);
-  assert.equal(lock.integrity, "sha512-" + createHash("sha512").update(read("vendor/sealbridge/sealbridge-0.6.3.tgz")).digest("base64"));
+  assert.equal(lock.integrity, pin.npmIntegrity);
+  assert.equal(lock.integrity, "sha512-" + createHash("sha512").update(read("vendor/sealbridge/sealbridge-local-0.7.0.tgz")).digest("base64"));
   assert.ok(read("electron-builder.yml").toString().includes("  - shared/context-pooling-copy.json"));
   const prepare = read("scripts/prepare-sealbridge-runtime.mjs").toString();
   assert.ok(prepare.indexOf('throw new Error("Core archive integrity mismatch")') < prepare.indexOf('"ci"'));
-  assert.ok(prepare.includes('"sealbridge-0.6.3.tgz", provenance.packageSha256'));
+  assert.ok(prepare.includes('"sealbridge-local-0.7.0.tgz", provenance.packageSha256'));
 });

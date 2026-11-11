@@ -10,7 +10,7 @@ import { fixtureKeyring } from "./fixtures/encrypted-keyring.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
 import { sanitizedEnvironment } from "./mcp-host.mjs";
 
-const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge");
+const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge-local");
 
 test("two overlapping Desktop key readers share owner and verify each other's signatures", { timeout: 20000 }, async t => {
   const dir = await mkdtemp(path.join(tmpdir(), "sealbridge-concurrent-"));
@@ -21,7 +21,7 @@ test("two overlapping Desktop key readers share owner and verify each other's si
   await writeFile(script, `
 import { resolveCoreContext } from ${JSON.stringify(new URL("./bootstrap.mjs", import.meta.url).href)};
 import { fixtureKeyring } from ${JSON.stringify(new URL("./fixtures/encrypted-keyring.mjs", import.meta.url).href)};
-import { signPayload, verifySigned } from ${JSON.stringify(new URL("../../build/sealbridge-runtime/node_modules/sealbridge/dist/packages/core/dist/index.js", import.meta.url).href)};
+import { signPayload, verifySigned } from ${JSON.stringify(new URL("../../build/sealbridge-runtime/node_modules/sealbridge-local/dist/packages/core/dist/index.js", import.meta.url).href)};
 const { owner } = await resolveCoreContext({ packageDir: ${JSON.stringify(packageDir)}, dataDir: process.env.SEALBRIDGE_DATA_DIR,
   keyringLoader: async () => fixtureKeyring(process.env.SEALBRIDGE_DATA_DIR) });
 process.send({ type: "opened", did: owner.did });

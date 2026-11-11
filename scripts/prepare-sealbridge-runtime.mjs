@@ -8,7 +8,7 @@ import path from "node:path";
 import { developmentRuntimeDir, resolveRuntime } from "../electron/sealbridge/runtime.mjs";
 
 const provenance = JSON.parse(await readFile(new URL("../vendor/sealbridge/provenance.json", import.meta.url), "utf8"));
-for (const [file, expected] of [["source.tar.gz", provenance.sourceSha256], ["sealbridge-0.6.3.tgz", provenance.packageSha256]]) {
+for (const [file, expected] of [["source.tar.gz", provenance.sourceSha256], ["sealbridge-local-0.7.0.tgz", provenance.packageSha256]]) {
   const bytes = await readFile(new URL(`../vendor/sealbridge/${file}`, import.meta.url));
   if (createHash("sha256").update(bytes).digest("hex") !== expected) throw new Error("Core archive integrity mismatch");
 }

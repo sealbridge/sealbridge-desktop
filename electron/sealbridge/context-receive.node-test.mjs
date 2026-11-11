@@ -16,8 +16,8 @@ import { executeContextSend } from "./context-send-core.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
 import { loadCoreSdk } from "./sdk.mjs";
 
-const load = name => import(pathToFileURL(path.join(developmentRuntimeDir, "node_modules/sealbridge/dist", name)).href);
-const sdk = await loadCoreSdk(path.join(developmentRuntimeDir, "node_modules/sealbridge"));
+const load = name => import(pathToFileURL(path.join(developmentRuntimeDir, "node_modules/sealbridge-local/dist", name)).href);
+const sdk = await loadCoreSdk(path.join(developmentRuntimeDir, "node_modules/sealbridge-local"));
 const core = await load("packages/core/dist/index.js");
 const relayApi = await load("packages/relay/dist/index.js");
 const input = "DW2_INPUT_" + "TRANSIENT_MARKER" + "x".repeat(4100);

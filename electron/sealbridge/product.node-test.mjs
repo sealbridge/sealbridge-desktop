@@ -28,7 +28,7 @@ function linuxPackager(config = parse(read("electron-builder.yml")), options = {
 
 test("product configuration is validated, copied and frozen", () => {
   assert.ok(Object.isFrozen(product));
-  assert.equal(product.cliVersion, "0.6.3");
+  assert.equal(product.cliVersion, "0.7.0");
   const source = { ...product };
   const copy = validateProduct(source);
   source.shortName = "changed";

@@ -38,7 +38,7 @@ if (process.argv[1] && normalizedEntryPath(process.argv[1]) === normalizedEntryP
       started = true; running = true;
       const { draft, target, auditPath } = message;
       if (!path.isAbsolute(auditPath ?? "")) throw new Error();
-      const packageDir = fileURLToPath(new URL("./node_modules/sealbridge/", import.meta.url));
+      const packageDir = fileURLToPath(new URL("./node_modules/sealbridge-local/", import.meta.url));
       const { owner, identityOptions, sdk } = await resolveCoreContext({ packageDir, dataDir: process.env.SEALBRIDGE_DATA_DIR });
       const { signApproval } = sdk;
       const trust = new sdk.WorkerTrustStore(owner, { path: sdk.workerIntakePath(owner.did, identityOptions) });

@@ -15,7 +15,7 @@ import { developmentRuntimeDir } from "./runtime.mjs";
 import { loadCoreSdk } from "./sdk.mjs";
 import { sanitizedEnvironment } from "./mcp-host.mjs";
 
-const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge");
+const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge-local");
 const load = name => import(pathToFileURL(path.join(packageDir, "dist", name)).href);
 const sdk = await loadCoreSdk(packageDir);
 const core = await load("packages/core/dist/index.js");
@@ -172,10 +172,10 @@ for (const mode of ["view_only", "hand_over"]) test(`local relay and bundled CLI
     verifiedAt: new Date().toISOString(), allow: true, revoked: false, saved: true,
   }] }, workerOwner)));
   const manifest = JSON.parse(await readFile(path.join(packageDir, "package.json"), "utf8"));
-  const entry = path.resolve(packageDir, manifest.bin.sealbridge);
+  const entry = path.resolve(packageDir, manifest.bin["sealbridge-local"]);
   const workerNode = process.versions.electron ? execFileSync("node", ["-p", "process.execPath"], { encoding: "utf8" }).trim() : process.execPath;
   const worker = spawn(workerNode, [entry, "worker", "start", "--key", path.join(dir, "worker-key.json"),
-    "--relay", relay.url, "--allow-private-relay", "--contacts", path.join(dir, "contacts.json"), "--adapter", "sandbox",
+    "--relay", relay.url, "--allow-private-relay", "--allow-local-pc", "--contacts", path.join(dir, "contacts.json"), "--adapter", "sandbox",
     "--cmd", "return {ok: true};", "--auto-approve", "--once", "--invite-output", "none", "--audit", path.join(dir, "worker.jsonl")],
   { cwd: dir, env: { ...sanitizedEnvironment(process.env, dir), SEALBRIDGE_DATA_DIR: dir, ACP_DATA_DIR: dir }, stdio: ["ignore", "pipe", "pipe"] });
   const closed = new Promise(resolve => worker.once("close", resolve));

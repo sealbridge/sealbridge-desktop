@@ -13,7 +13,7 @@ function normalizedEntryPath(value) {
 }
 
 export async function runReceiveChild({ input = process.stdin, output = process.stdout,
-  packageDir = fileURLToPath(new URL("./node_modules/sealbridge/", import.meta.url)),
+  packageDir = fileURLToPath(new URL("./node_modules/sealbridge-local/", import.meta.url)),
   dataDir = process.env.SEALBRIDGE_DATA_DIR, keyringLoader } = {}) {
   const lines = createInterface({ input });
   const send = event => output.write(JSON.stringify(event) + "\n");

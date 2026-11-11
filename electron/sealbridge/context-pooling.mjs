@@ -21,7 +21,7 @@ export function validContextDraft(value) {
 
 export async function loadContextSdk(runtimeDir = developmentRuntimeDir) {
   resolveRuntime({ runtimeDir });
-  return loadCoreSdk(path.join(runtimeDir, "node_modules/sealbridge"));
+  return loadCoreSdk(path.join(runtimeDir, "node_modules/sealbridge-local"));
 }
 
 export function createContextPreparation({ loadSdk = loadContextSdk, now = Date.now } = {}) {
