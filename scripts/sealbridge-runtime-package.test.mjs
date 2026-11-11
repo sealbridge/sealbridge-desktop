@@ -33,6 +33,7 @@ it.each(["win32", "darwin", "linux"])("copies the CLI package and bin with elect
     });
     await copyFiles(matchers.filter(matcher => matcher.from === source));
     expect(() => resolveRuntime({ resourcesPath: resources })).toThrow(/package\.json/);
+    await rm(resources, { recursive: true });
     await copyFiles(matchers);
     const { cliEntry } = resolveRuntime({ resourcesPath: resources });
     expect(await readFile(path.join(resources, "sealbridge-runtime", "bootstrap.mjs"), "utf8")).toBe("");
