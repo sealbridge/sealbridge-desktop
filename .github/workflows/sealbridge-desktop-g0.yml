@@ -25,6 +25,7 @@ jobs:
       - run: node branding/generate.mjs --check
       - run: node --test electron/rebrand.node-test.mjs
       - run: node scripts/check-fork-boundaries.mjs
+      - run: pnpm exec vitest run scripts/sealbridge-runtime-package.test.mjs
       - run: pnpm exec vitest run scripts/check-fork-boundaries.test.mjs src/components/SealbridgeStatusRow.test.ts src/features/sealbridge/InviteView.test.ts src/features/sealbridge/context-pooling/ContextPoolingView.test.ts src/features/sealbridge/context-pooling/ContextSendPanel.test.ts src/features/sealbridge/context-pooling/ContextReceivePanel.test.ts src/features/sealbridge/context-pooling/ContextReceivedPanel.test.ts src/components/Select.guard.test.ts scripts/testing/file-size-ratchet.test.ts
       - run: node --test electron/sealbridge/context-pooling-pin.node-test.mjs electron/sealbridge/context-pooling.node-test.mjs electron/sealbridge/invites.node-test.mjs electron/preload.node-test.mjs electron/preload-contract.node-test.mjs
       - run: pnpm exec vitest run src/features/sealbridge/DesktopHome.test.ts src/features/sealbridge/WorkplacePanel.test.ts src/state/page-navigation.test.ts
