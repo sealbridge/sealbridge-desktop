@@ -2,7 +2,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "sealbridge": "file:../../vendor/sealbridge/sealbridge-0.6.3.tgz",
-    "@napi-rs/keyring": "2.1.2"
+    "@napi-rs/keyring": "2.1.2",
+    "sealbridge-local": "file:../../vendor/sealbridge/sealbridge-local-0.7.0.tgz"
   }
 }

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import test from "node:test";
 import { McpHost } from "./mcp-host.mjs";
 import { negotiateCapabilities } from "./capabilities.mjs";
@@ -10,11 +12,19 @@ import { product } from "./product.mjs";
 const prepared = existsSync(path.join(developmentRuntimeDir, "package.json"));
 const configured = process.env.SEALBRIDGE_CLI_ENTRY;
 
-test("live pinned CLI initializes and lists tools without relay access", { skip: !configured && !prepared }, async t => {
+for (const permission of [undefined, false]) test(`local requester initializes without PC permission (${permission ?? "unset"})`, { skip: !configured && !prepared }, async t => {
   const runtime = configured ? { cliEntry: path.resolve(configured) } : resolveRuntime();
   const manifest = JSON.parse(readFileSync(path.resolve(path.dirname(runtime.cliEntry), "../../../package.json"), "utf8"));
   assert.equal(manifest.version, product.cliVersion);
-  const host = new McpHost({ ...runtime, timeoutMs: 10000 });
+  assert.equal(manifest.name, "sealbridge-local");
+  assert.deepEqual(Object.keys(manifest.bin), ["sealbridge-local"]);
+  assert.match(await readFile(path.join(path.dirname(runtime.cliEntry), "distribution.js"), "utf8"), /export const LOCAL_DISTRIBUTION = true;/);
+  const dataDir = await mkdtemp(path.join(tmpdir(), "sealbridge-local-requester-"));
+  t.after(() => rm(dataDir, { recursive: true, force: true }));
+  const configPath = path.join(dataDir, "config.json");
+  const config = JSON.stringify({ version: 1, relays: [product.defaultRelay], ...(permission === undefined ? {} : { localPcExecution: permission }) });
+  await writeFile(configPath, config, { mode: 0o600 });
+  const host = new McpHost({ ...runtime, dataDir, timeoutMs: 10000 });
   t.after(() => host.close());
   const { initialize, catalog } = await host.start();
   assert.equal(initialize.serverInfo.name, "sealbridge-mcp-server");
@@ -28,4 +38,5 @@ test("live pinned CLI initializes and lists tools without relay access", { skip:
   assert.ok(capabilities.tools.includes("acp_remove_invite"));
   await host.close();
   assert.equal(host.running, false);
+  assert.equal(await readFile(configPath, "utf8"), config);
 });

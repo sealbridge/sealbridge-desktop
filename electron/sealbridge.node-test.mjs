@@ -8,3 +8,4 @@ import "./sealbridge/runtime.node-test.mjs";
 import "./sealbridge/live.node-test.mjs";
 import "./sealbridge/invites.node-test.mjs";
 import "./sealbridge/sdk.node-test.mjs";
+import "./sealbridge/context-pooling-pin.node-test.mjs";

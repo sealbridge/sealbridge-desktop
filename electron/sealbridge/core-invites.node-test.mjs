@@ -8,7 +8,7 @@ import { createCoreInvites } from "./core-invites.mjs";
 import { bootstrapCore, resolveCoreContext } from "./bootstrap.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
 
-const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge");
+const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge-local");
 
 async function allBytes(dir) {
   const entries = await readdir(dir, { withFileTypes: true });

@@ -1,1 +1,1 @@
-export * from "sealbridge/sdk";
+export * from "sealbridge-local/sdk";

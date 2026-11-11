@@ -3,7 +3,7 @@ import { bootstrapCore } from "./bootstrap.mjs";
 
 try {
   const { did, server } = await bootstrapCore({
-    packageDir: fileURLToPath(new URL("./node_modules/sealbridge/", import.meta.url)),
+    packageDir: fileURLToPath(new URL("./node_modules/sealbridge-local/", import.meta.url)),
     dataDir: process.env.SEALBRIDGE_DATA_DIR,
   });
   process.send({ type: "identity", did });

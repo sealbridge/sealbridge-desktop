@@ -4,7 +4,7 @@ import { createCoreInvites } from "./core-invites.mjs";
 
 try {
   const api = await createCoreInvites({
-    packageDir: fileURLToPath(new URL("./node_modules/sealbridge/", import.meta.url)),
+    packageDir: fileURLToPath(new URL("./node_modules/sealbridge-local/", import.meta.url)),
     dataDir: process.env.SEALBRIDGE_DATA_DIR,
   });
   const [action, ref] = process.argv.slice(2);

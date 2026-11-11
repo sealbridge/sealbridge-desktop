@@ -9,7 +9,7 @@ import { fixtureKeyring } from "./fixtures/encrypted-keyring.mjs";
 import { developmentRuntimeDir } from "./runtime.mjs";
 import { sanitizedEnvironment } from "./mcp-host.mjs";
 
-const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge");
+const packageDir = path.join(developmentRuntimeDir, "node_modules/sealbridge-local");
 async function fixture(t) {
   const dir = await mkdtemp(path.join(tmpdir(), "sealbridge-core-test-"));
   t.after(() => rm(dir, { recursive: true, force: true }));

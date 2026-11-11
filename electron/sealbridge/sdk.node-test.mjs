@@ -11,10 +11,10 @@ const root = new URL("../../", import.meta.url);
 test("Desktop resolves the SDK import export from the selected runtime", async t => {
   const dir = await mkdtemp(path.join(tmpdir(), "sealbridge-sdk-"));
   t.after(() => rm(dir, { recursive: true, force: true }));
-  const packageDir = path.join(dir, "node_modules/sealbridge");
+  const packageDir = path.join(dir, "node_modules/sealbridge-local");
   await mkdir(packageDir, { recursive: true });
   await writeFile(path.join(packageDir, "package.json"), JSON.stringify({
-    name: "sealbridge", type: "module", exports: { "./sdk": { import: "./public.mjs" } },
+    name: "sealbridge-local", type: "module", exports: { "./sdk": { import: "./public.mjs" } },
   }));
   await writeFile(path.join(packageDir, "public.mjs"), 'export const selected = "fixture";');
   await writeFile(path.join(dir, "sdk-entry.mjs"), await readFile(new URL("runtime/sealbridge/sdk-entry.mjs", root)));

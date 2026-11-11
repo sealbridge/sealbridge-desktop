@@ -1,11 +1,14 @@
 # Bundled core
 
-Upstream source: https://github.com/sealbridge/sealbridge, commit
-`3b20ca1eb9d5f5dd950cb7ac6c21a82abe4dbc15` (upstream version `0.6.3`).
-The desktop installs this archived commit, including interrupted outbox recovery, default AuditInterruption sealing,
-AES-256-GCM documentation and C-W4 quarantine deadlines,
-never a registry package with the same version. When the parent is Electron, the rule inspector child receives the constant `ELECTRON_RUN_AS_NODE=1`.
-`setApplicationKeyStore` retries briefly while `.config.lock` is held and succeeds when the requested key store is already published.
+Upstream source: https://github.com/sealbridge/sealbridge, tag v0.7.0, commit
+`77c6140c75e5fec89428727de00aca217a4cbb0c` (version `0.7.0`).
+The bundled package is `sealbridge-local@0.7.0`, built from the local publish
+root `dist-local` by upstream `scripts/package-cli.mjs`, with bin
+`sealbridge-local` and `LOCAL_DISTRIBUTION = true`.
+`sealbridge-local-0.7.0.tgz` is the published npm tarball, verified against
+npm's SHA-512 integrity in `provenance.json`. This first local release was
+published manually and has no npm provenance attestation; the source archive
+and recorded hashes are local pinning evidence, not an npm attestation.
 `provenance.json` records SHA-256 hashes; the preparation script verifies both
 archives before `npm ci`. `runtime/sealbridge/package-lock.json` pins the complete
 runtime dependency graph, including `@napi-rs/keyring@2.1.2` and platform natives.
@@ -13,7 +16,7 @@ runtime dependency graph, including `@napi-rs/keyring@2.1.2` and platform native
 `source.tar.gz` is `git archive --format=tar.gz` of that commit. To rebuild the
 package, extract it into a new temporary directory, install with its frozen
 `pnpm-lock.yaml` using Corepack pnpm@10.34.6, then run `pnpm run package:cli` and
-`npm pack --ignore-scripts`. These operations must run in the temporary copy,
+`npm pack ./dist-local --ignore-scripts`. These operations must run in the temporary copy,
 never in the read-only reference clone. Review and update both archive hashes
 and the runtime lockfile together when upgrading.
 
@@ -52,6 +55,19 @@ Raw credentials enter a one-shot child through stdin only. Confirmation uses the
 core connectionsCommand confirm-invite with a saved reference after desktop human
 confirmation; it creates limited consent and does not grant task execution.
 
-Context preparation uses the bundled sealbridge/sdk exports for grant construction,
+Context preparation uses the bundled sealbridge-local/sdk exports for grant construction,
 validation and digest-only audit payload projection. Preparation does not append
 lifecycle events because it does not send, open or delete context.
+
+Desktop starts only the requester `mcp-server --relay ? --require-approval`,
+not a core worker, receive hook or relay wake command. Its production
+core-child bootstraps the requester AcpMcpServer through the public SDK with
+`requireInteractiveApproval: true` and keychain identity options. Upstream 0.7.0 gates
+those execution paths in `cli/src/network.ts`; `cli/src/mcp.ts` does not call
+`ensureLocalPcOptIn`. Non-interactive requester startup therefore needs no
+`localPcExecution` permission. Desktop neither passes `--allow-local-pc` nor
+writes that setting. Children retain their private Desktop data directory
+and isolated home; mainline CLI configuration is not read. Existing workplace
+prepare/decide cards, content inspection and `assertLlmAutoAccept` remain in
+force. A future embedded core worker must use local HostBackend and
+LocalSecretBroker and obtain explicit first-use owner permission.
